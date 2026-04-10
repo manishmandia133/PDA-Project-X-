@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDA Examples — CFL Gallery</title>
+<link rel="stylesheet" href="../assets/css/shared.css"/>
+<style>
+body{cursor:none;overflow-x:hidden;}
+.ex-page{padding-top:65px;}
+
+.ex-hero{
+  padding:70px 60px 50px;border-bottom:1px solid var(--border);
+  background:var(--dark);position:relative;overflow:hidden;
+}
+.ex-hero-bg{position:absolute;right:-60px;bottom:-40px;font-family:var(--head);font-size:260px;font-weight:800;color:rgba(255,255,255,.025);line-height:1;pointer-events:none;}
+
+.ex-wrap{padding:48px 60px;}
+
+/* ── Section ── */
+.ex-sect{margin-bottom:72px;}
+.ex-sect-head{display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.ex-sn{font-family:var(--head);font-size:72px;font-weight:800;color:rgba(255,255,255,.05);line-height:1;flex-shrink:0;}
+.ex-si{flex:1;}
+.ex-tag{display:inline-block;padding:3px 10px;border-radius:2px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;}
+.tag-cfl{background:rgba(181,255,217,.1);color:var(--mint);border:1px solid rgba(181,255,217,.25);}
+.tag-not{background:rgba(255,80,80,.08);color:#ff5050;border:1px solid rgba(255,80,80,.22);}
+.ex-title{font-family:var(--head);font-size:clamp(26px,3.5vw,48px);font-weight:800;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:6px;}
+.ex-desc{font-size:12px;color:var(--text-dim);line-height:1.7;max-width:560px;}
+
+/* ── How it works box ── */
+.ex-how{
+  background:var(--dark2);border:1px solid var(--border);border-radius:4px;
+  padding:20px 24px;margin-bottom:24px;border-left:3px solid var(--mint);
+}
+.ex-how h4{font-family:var(--head);font-size:12px;font-weight:700;text-transform:uppercase;color:var(--mint);margin-bottom:12px;letter-spacing:.04em;}
+.ex-how-steps{display:flex;flex-direction:column;gap:7px;}
+.ex-how-row{font-size:12px;font-family:var(--mono);color:var(--text-dim);display:flex;gap:8px;line-height:1.5;}
+.ex-how-row span{color:var(--mint);font-weight:700;}
+
+/* ── Card grid ── */
+.str-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.str-card{
+  background:var(--dark2);border:1px solid var(--border);border-radius:4px;
+  padding:20px;cursor:none;transition:all .25s;position:relative;overflow:hidden;
+}
+.str-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(181,255,217,.05),transparent);opacity:0;transition:opacity .3s;}
+.str-card:hover{border-color:rgba(181,255,217,.25);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
+.str-card:hover::before{opacity:1;}
+.str-card.rej-card:hover{border-color:rgba(255,80,80,.25);}
+.str-card.rej-card::before{background:radial-gradient(ellipse at top left,rgba(255,80,80,.05),transparent);}
+.str-tag{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.str-tag.a{color:var(--mint);}
+.str-tag.r{color:#ff5050;}
+.str-val{font-family:var(--head);font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:5px;}
+.str-info{font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:12px;}
+.str-trace{background:rgba(0,0,0,.3);border-radius:3px;padding:9px 12px;border-left:2px solid var(--border2);display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.str-trace div{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.3);line-height:1.5;}
+.str-trace div span{color:var(--mint);}
+.str-card.rej-card .str-trace div span{color:#ff5050;}
+.str-run{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:2px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.05em;text-decoration:none;transition:all .2s;border:none;cursor:none;text-transform:uppercase;}
+.str-run.go{background:rgba(181,255,217,.1);border:1px solid rgba(181,255,217,.3);color:var(--mint);}
+.str-run.go:hover{background:rgba(181,255,217,.2);box-shadow:0 0 18px rgba(181,255,217,.15);}
+.str-run.no{background:rgba(255,80,80,.07);border:1px solid rgba(255,80,80,.22);color:#ff5050;}
+.str-run.no:hover{background:rgba(255,80,80,.14);}
+
+/* non-CFL warning */
+.non-box{background:rgba(255,80,80,.04);border:1px solid rgba(255,80,80,.14);border-radius:4px;padding:28px;margin-bottom:20px;}
+.non-title{font-family:var(--head);font-size:18px;font-weight:800;text-transform:uppercase;color:#ff5050;margin-bottom:10px;}
+.non-body{font-size:13px;color:var(--text-dim);line-height:1.8;}
+.non-body strong{color:var(--white);}
+
+/* summary table */
+.sum-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);margin-top:36px;}
+.sum-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);background:var(--dark2);}
+.sum-table td{padding:9px 12px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04);}
+.sum-table td:first-child{color:var(--mint);font-weight:700;}
+.sum-table td.yep{color:var(--mint);}
+.sum-table td.nop{color:#ff5050;}
+
+@media(max-width:768px){.ex-hero,.ex-wrap{padding:36px 20px;}.str-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.str-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="cursor-dot"></div><div id="cursor-ring"></div>
+<div class="noise"></div>
+<div class="side-badge">PDA · Examples</div>
+
+<nav class="nav scrolled" id="main-nav">
+  <a href="../index.html" class="nav-logo">PDA<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="simulate.html">Simulator</a></li>
+    <li><a href="examples.html" class="active">Examples</a></li>
+  </ul>
+  <a href="simulate.html" class="nav-cta">Simulator ↗</a>
+</nav>
+
+<div class="ex-page">
+  <div class="ex-hero">
+    <div class="ex-hero-bg">EX</div>
+    <div class="sect-label g-left">Examples Gallery</div>
+    <h1 class="section-h g-up" style="max-width:780px;font-size:clamp(28px,4.5vw,68px)">CONTEXT-FREE <span class="ac">LANGUAGE</span> EXAMPLES</h1>
+    <p class="body-text g-up">Every card shows a string, whether it's accepted or rejected, a step-by-step stack trace, and a direct link to run the live simulation. Click any card to simulate.</p>
+  </div>
+
+  <!-- Summary table -->
+  <div style="padding:0 60px;background:var(--dark);">
+    <table class="sum-table">
+      <thead><tr><th>Language</th><th>Notation</th><th>Context-Free?</th><th>Stack Strategy</th><th>Acceptance</th></tr></thead>
+      <tbody>
+        <tr><td>aⁿbⁿ</td><td>{ aⁿbⁿ | n≥1 }</td><td class="yep">✓ Yes</td><td>Push A per a, pop A per b</td><td>Final state q2</td></tr>
+        <tr><td>ww^R</td><td>{ ww^R | w∈{a,b}* }</td><td class="yep">✓ Yes</td><td>Push first half, ε-guess mid, pop second</td><td>Final state q2</td></tr>
+        <tr><td>Brackets</td><td>balanced () [] {}</td><td class="yep">✓ Yes</td><td>Push opener, pop on matching closer</td><td>Final state q1</td></tr>
+        <tr><td>aⁿbⁿcⁿ</td><td>{ aⁿbⁿcⁿ | n≥1 }</td><td class="nop">✗ No</td><td>Needs 2 counters — impossible with 1 stack</td><td>— always rejects</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ex-wrap">
+
+    <!-- ══ aⁿbⁿ ══ -->
+    <div class="ex-sect" id="anbn">
+      <div class="ex-sect-head g-up">
+        <div class="ex-sn">01</div>
+        <div class="ex-si">
+          <div class="ex-tag tag-cfl">✓ Context-Free</div>
+          <div class="ex-title">aⁿbⁿ <span class="ac">Language</span></div>
+          <div class="ex-desc">L = { aⁿbⁿ | n ≥ 1 }. Equal a's then equal b's. The PDA uses the stack as a counter: one push per 'a', one pop per 'b'. When the stack returns to just Z₀, the counts are equal.</div>
+        </div>
+      </div>
+      <div class="ex-how">
+        <h4>How the PDA handles aⁿbⁿ</h4>
+        <div class="ex-how-steps">
+          <div class="ex-how-row"><span>q0</span> Reading first 'a': push A on top of Z₀ → stack=[A,Z]. Move to q1.</div>
+          <div class="ex-how-row"><span>q1</span> Each 'a': push A. Stack grows one level per 'a'. Depth = n.</div>
+          <div class="ex-how-row"><span>q1</span> Each 'b': pop one A. Stack shrinks. Transitions stay in q1.</div>
+          <div class="ex-how-row"><span>q1→q2</span> When stack top = Z (all A's popped) and input ends: ε-move to q2 (accept state).</div>
+          <div class="ex-how-row"><span>REJECT</span> If 'b' arrives when stack top is Z, or input ends with A's still on stack → no valid transition → reject.</div>
+        </div>
+      </div>
+      <div class="str-grid">
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">ab</div>
+          <div class="str-info">n=1. Simplest case — one a and one b.</div>
+          <div class="str-trace">
+            <div>q0 ─ a,Z/AZ → q1  stack:[<span>A</span>,Z]</div>
+            <div>q1 ─ b,A/ε → q1   stack:[<span>Z</span>]</div>
+            <div>q1 ─ ε,Z/Z → q2   <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=ab" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">aabb</div>
+          <div class="str-info">n=2. Stack reaches depth 2 during the a-phase.</div>
+          <div class="str-trace">
+            <div>Push <span>A×2</span> → stack:[A,A,Z]</div>
+            <div>Pop  <span>A×2</span> → stack:[Z]</div>
+            <div>ε → q2 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=aabb" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">aaabbb</div>
+          <div class="str-info">n=3. Stack depth 3 during counting phase.</div>
+          <div class="str-trace">
+            <div>Push <span>A×3</span> → stack:[A,A,A,Z]</div>
+            <div>Pop  <span>A×3</span> → stack:[Z]</div>
+            <div>ε → q2 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=aaabbb" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">aaaabbbb</div>
+          <div class="str-info">n=4. Longer example — stack depth peaks at 4.</div>
+          <div class="str-trace">
+            <div>Push <span>A×4</span> → depth 4</div>
+            <div>Pop  <span>A×4</span> → stack:[Z]</div>
+            <div>ε → q2 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=aaaabbbb" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">aab</div>
+          <div class="str-info">2 a's but only 1 b — stack not empty at end.</div>
+          <div class="str-trace">
+            <div>Push A×2 → stack:[<span>A,A</span>,Z]</div>
+            <div>Pop A×1 → stack:[<span>A</span>,Z]</div>
+            <div>Input ends, A still on stack → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=aab" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">abab</div>
+          <div class="str-info">Interleaved — wrong order, no rule matches.</div>
+          <div class="str-trace">
+            <div>Push A, pop A for 'b' → stack:[Z]</div>
+            <div>Next='a', state=q1, top=Z</div>
+            <div>No rule: δ(q1,a,Z) undefined → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=anbn&input=abab" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hline"></div>
+
+    <!-- ══ ww^R ══ -->
+    <div class="ex-sect" id="palindrome" style="margin-top:56px">
+      <div class="ex-sect-head g-up">
+        <div class="ex-sn">02</div>
+        <div class="ex-si">
+          <div class="ex-tag tag-cfl">✓ Context-Free</div>
+          <div class="ex-title">ww^R <span class="ac">Palindromes</span></div>
+          <div class="ex-desc">L = { ww^R | w ∈ {a,b}* }. Even-length strings that are their own reverse. The PDA nondeterministically guesses the midpoint: push the first half, ε-transition at the middle, then pop while matching the reversed second half.</div>
+        </div>
+      </div>
+      <div class="ex-how">
+        <h4>How the PDA handles ww^R</h4>
+        <div class="ex-how-steps">
+          <div class="ex-how-row"><span>q0</span> Reads and pushes every symbol (a→A, b→B). Stays in q0.</div>
+          <div class="ex-how-row"><span>q0→q1</span> At any point: ε-transition to q1 (nondeterministic guess of midpoint). No input consumed, no stack change.</div>
+          <div class="ex-how-row"><span>q1</span> For each remaining input symbol, must match the stack top. Matching = pop. Mismatch = no rule = reject.</div>
+          <div class="ex-how-row"><span>q1→q2</span> When all input consumed and stack top = Z: ε-move to q2 (accept).</div>
+        </div>
+      </div>
+      <div class="str-grid">
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">abba</div>
+          <div class="str-info">Reverse of "ab" is "ba". Classic 4-char palindrome.</div>
+          <div class="str-trace">
+            <div>Push <span>A,B</span> → stack:[B,A,Z]</div>
+            <div>Guess mid (ε,q0→q1)</div>
+            <div>Pop B for 'b', A for 'a' → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=palindrome&input=abba" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">aabbaa</div>
+          <div class="str-info">6-char palindrome. Stack reaches depth 3.</div>
+          <div class="str-trace">
+            <div>Push <span>A,A,B</span> → stack:[B,A,A,Z]</div>
+            <div>Guess mid at position 3</div>
+            <div>Pop B,A,A → stack:[Z] → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=palindrome&input=aabbaa" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">aaaa</div>
+          <div class="str-info">All a's — reverse of "aa" is "aa".</div>
+          <div class="str-trace">
+            <div>Push <span>A×2</span> → stack:[A,A,Z]</div>
+            <div>Guess mid → q1</div>
+            <div>Pop A×2 → stack:[Z] → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=palindrome&input=aaaa" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">abab</div>
+          <div class="str-info">Not a palindrome. Reverse is "baba".</div>
+          <div class="str-trace">
+            <div>After mid guess: stack=[B,A,Z]</div>
+            <div>Next='a', stack top=<span>B</span> — mismatch</div>
+            <div>No rule δ(q1,a,B) → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=palindrome&input=abab" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">aba</div>
+          <div class="str-info">Odd length — ww^R requires even length.</div>
+          <div class="str-trace">
+            <div>Length 3 = odd → no valid even-split</div>
+            <div>Cannot satisfy |w|=|w^R| simultaneously</div>
+            <div>All paths fail → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=palindrome&input=aba" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hline"></div>
+
+    <!-- ══ BRACKETS ══ -->
+    <div class="ex-sect" id="brackets" style="margin-top:56px">
+      <div class="ex-sect-head g-up">
+        <div class="ex-sn">03</div>
+        <div class="ex-si">
+          <div class="ex-tag tag-cfl">✓ Context-Free</div>
+          <div class="ex-title">Balanced <span class="ac">Brackets</span></div>
+          <div class="ex-desc">L = { w | w is a balanced sequence of ( ) [ ] { } }. Every compiler uses this exact algorithm. The PDA pushes each opener and verifies/pops on each closer. A mismatch (e.g. '(' followed by ']') immediately rejects.</div>
+        </div>
+      </div>
+      <div class="ex-how">
+        <h4>How the PDA handles brackets</h4>
+        <div class="ex-how-steps">
+          <div class="ex-how-row"><span>OPEN</span> ( → push '(' on stack. [ → push '['. { → push '{'. Stay in q0.</div>
+          <div class="ex-how-row"><span>CLOSE</span> ) requires stack top = '('. ] requires '['. } requires '{'. Pop on match.</div>
+          <div class="ex-how-row"><span>MISMATCH</span> Close bracket but wrong type on stack top → no matching rule → REJECT.</div>
+          <div class="ex-how-row"><span>ACCEPT</span> Input ends, stack top = Z → ε-move to q1 (accept). All brackets matched.</div>
+          <div class="ex-how-row"><span>REJECT</span> Input ends but opener(s) still on stack → unclosed brackets → REJECT.</div>
+        </div>
+      </div>
+      <div class="str-grid">
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">()</div>
+          <div class="str-info">One matched pair. Minimal balanced sequence.</div>
+          <div class="str-trace">
+            <div>Push <span>(</span> → stack:[(,Z]</div>
+            <div>Pop  <span>(</span> for ')' → stack:[Z]</div>
+            <div>ε → q1 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=()" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">([{}])</div>
+          <div class="str-info">Nested mixed types — all balanced correctly.</div>
+          <div class="str-trace">
+            <div>Push (, [, { in order</div>
+            <div>Pop {, [, ( in reverse → stack:[Z]</div>
+            <div>ε → q1 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=([{}])" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card g-scale">
+          <div class="str-tag a">✓ ACCEPTED</div>
+          <div class="str-val">((()))</div>
+          <div class="str-info">3 levels of nested parentheses.</div>
+          <div class="str-trace">
+            <div>Push ( × 3 → depth 3</div>
+            <div>Pop  ( × 3 → stack:[Z]</div>
+            <div>ε → q1 → <span>ACCEPT ✓</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=((()))" class="str-run go" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">([)]</div>
+          <div class="str-info">Crossed types — wrong close order.</div>
+          <div class="str-trace">
+            <div>Push (, [ → stack:[<span>[</span>,(,Z]</div>
+            <div>Next=')' but top=<span>[</span> → mismatch</div>
+            <div>No rule → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=([)]" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">((())</div>
+          <div class="str-info">One unclosed parenthesis.</div>
+          <div class="str-trace">
+            <div>Push ( × 3, pop ( × 2 → stack:[<span>(</span>,Z]</div>
+            <div>Input ends, ( still on stack</div>
+            <div>Stack ≠ [Z] → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=((())" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+        <div class="str-card rej-card g-scale">
+          <div class="str-tag r">✗ REJECTED</div>
+          <div class="str-val">)(</div>
+          <div class="str-info">Reversed — close before open.</div>
+          <div class="str-trace">
+            <div>First symbol=')', stack top=<span>Z</span></div>
+            <div>No rule δ(q0,')',Z) defined</div>
+            <div>Dead config → <span>REJECT ✗</span></div>
+          </div>
+          <a href="simulate.html?preset=brackets&input=)(" class="str-run no" onclick="navTo(event,this.href)">Run Live ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hline"></div>
+
+    <!-- ══ NON-CFL ══ -->
+    <div class="ex-sect" id="noncfl" style="margin-top:56px">
+      <div class="ex-sect-head g-up">
+        <div class="ex-sn">04</div>
+        <div class="ex-si">
+          <div class="ex-tag tag-not">✗ NOT Context-Free</div>
+          <div class="ex-title">aⁿbⁿcⁿ — <span style="color:#ff5050">PDA Limit</span></div>
+          <div class="ex-desc">L = { aⁿbⁿcⁿ | n ≥ 1 }. Provably NOT a context-free language. No PDA can recognize it. Requires two independent counters — a PDA provides only one LIFO stack.</div>
+        </div>
+      </div>
+      <div class="non-box">
+        <div class="non-title">⚠ Why PDAs Cannot Recognize aⁿbⁿcⁿ</div>
+        <div class="non-body">
+          A PDA has exactly <strong>one stack</strong>. After using it to count n a's and verify n b's (by depleting the stack), there is <strong>no memory left</strong> to verify that exactly n c's follow. The stack is already empty.<br/><br/>
+          <strong>Pumping Lemma proof:</strong> Take s = aᵖbᵖcᵖ (|s| = 3p ≥ p). Any decomposition s = uvxyz with |vxy| ≤ p means vxy lies within at most 2 symbol types. Pumping i = 2 increases those 2 types' counts while leaving the third unchanged — breaking the equal-count condition. Since no valid pumping exists, the language is not a CFL.<br/><br/>
+          <strong>What CAN recognize it:</strong> A <em>linear-bounded automaton</em> (Type 1, context-sensitive) or a full <em>Turing Machine</em> can count all three independently.
+        </div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+          <a href="simulate.html?preset=anbncn&input=aabbcc" class="str-run no" onclick="navTo(event,this.href)" style="text-decoration:none">Try aabbcc → rejects ↗</a>
+          <a href="simulate.html?preset=anbncn&input=abc" class="str-run no" onclick="navTo(event,this.href)" style="text-decoration:none">Try abc → rejects ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /ex-wrap -->
+</div><!-- /ex-page -->
+
+<footer>
+  <div class="footer-logo">PDA<span>.</span></div>
+  <div class="footer-copy">// Pushdown Automaton · Interactive Theory & Simulator</div>
+  <ul class="footer-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="simulate.html">Simulate</a></li>
+    <li><a href="examples.html">Examples</a></li>
+  </ul>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+gsap.ticker.add(()=>{gsap.set(dot,{x:mx,y:my});rx+=(mx-rx)*.1;ry+=(my-ry)*.1;gsap.set(ring,{x:rx,y:ry});});
+
+/* hero instant reveal */
+gsap.fromTo('.ex-hero .sect-label',{opacity:0,x:-30},{opacity:1,x:0,duration:.7,ease:'power3.out',delay:.2});
+gsap.fromTo('.ex-hero .section-h',{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:'power3.out',delay:.3});
+gsap.fromTo('.ex-hero .body-text',{opacity:0,y:20},{opacity:1,y:0,duration:.7,ease:'power3.out',delay:.5});
+gsap.fromTo('.sum-table',{opacity:0,y:20},{opacity:1,y:0,duration:.7,ease:'power3.out',delay:.65});
+
+/* scroll-triggered reveals */
+gsap.utils.toArray('.ex-sect-head').forEach(el=>{
+  gsap.fromTo(el,{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 86%'}});
+});
+gsap.utils.toArray('.ex-how').forEach(el=>{
+  gsap.fromTo(el,{opacity:0,x:-20},{opacity:1,x:0,duration:.7,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 87%'}});
+});
+gsap.utils.toArray('.ex-sect').forEach(section=>{
+  const cards=section.querySelectorAll('.str-card');
+  gsap.fromTo(cards,{opacity:0,y:50,scale:.97},{opacity:1,y:0,scale:1,stagger:.07,duration:.7,ease:'power3.out',
+    scrollTrigger:{trigger:section,start:'top 76%'}
+  });
+});
+gsap.fromTo('.non-box',{opacity:0,y:30},{opacity:1,y:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:'.non-box',start:'top 85%'}});
+
+/* 3D card hover */
+document.querySelectorAll('.str-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width-.5)*10;
+    const y=((e.clientY-r.top)/r.height-.5)*10;
+    gsap.to(card,{rotationY:x,rotationX:-y,duration:.3,ease:'power2.out',transformPerspective:700});
+  });
+  card.addEventListener('mouseleave',()=>{gsap.to(card,{rotationY:0,rotationX:0,duration:.5,ease:'power3.out'});});
+});
+
+/* parallax big numbers */
+gsap.utils.toArray('.ex-sn').forEach(el=>{
+  gsap.to(el,{y:-25,ease:'none',scrollTrigger:{trigger:el.parentElement,start:'top bottom',end:'bottom top',scrub:true}});
+});
+
+function navTo(e,href){e.preventDefault();gsap.to('body',{opacity:0,duration:.3,ease:'power2.in',onComplete:()=>window.location.href=href});}
+gsap.fromTo('body',{opacity:0},{opacity:1,duration:.4,ease:'power2.out',delay:.05});
+</script>
+</body>
+</html>

@@ -1,303 +1,449 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDA Simulator — Pushdown Automaton Visualizer</title>
-  <meta name="description" content="Interactive Pushdown Automaton (PDA) simulator with canvas state diagram, animated tape, stack visualization, and step-by-step transition tracing."/>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>PDA — Pushdown Automaton Theory & Simulator</title>
+  <meta name="description"
+    content="Interactive Pushdown Automaton (PDA) theory, visualization and simulator. Learn context-free languages with live animations." />
+  <link rel="stylesheet" href="assets/css/shared.css" />
+  <link rel="stylesheet" href="assets/css/index.css" />
 </head>
+
 <body>
 
-<!-- ═══════════════════════════════ HEADER ══ -->
-<header class="header">
-  <div class="header-logo">
-    <div class="logo-icon">⬡</div>
-    <div>
-      <div class="header-title">PDA_SIMULATOR</div>
-      <div class="header-sub">// Pushdown Automaton · Interactive Visualizer v2.0</div>
+  <!-- ═══════════════ LOADER ═══════════════ -->
+  <div id="loader">
+    <div class="loader-logo">PDA<span>.</span></div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar" id="loader-bar"></div>
+    </div>
+    <div class="loader-sub">Initializing Automaton…</div>
+  </div>
+
+  <!-- Cursor -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <div class="noise"></div>
+  <div class="side-badge">PDA · Theory ↓</div>
+
+  <!-- ═══════════════ NAV ═══════════════ -->
+  <nav class="nav" id="main-nav">
+    <a href="index.html" class="nav-logo">PDA<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="pages/simulate.html">Simulator</a></li>
+      <li><a href="pages/examples.html">Examples</a></li>
+    </ul>
+    <a href="pages/simulate.html" class="nav-cta">Launch Simulator ↗</a>
+  </nav>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero" id="hero">
+    <canvas class="waves" id="hero-canvas"></canvas>
+    <div class="wave-bg"></div>
+
+    <div class="hero-main">
+      <div class="hero-stats g-fade">
+        <div class="hero-stat">Type<strong>PDA</strong></div>
+        <div class="hero-stat">Language Class<strong>CFL</strong></div>
+        <div class="hero-stat">Memory<strong>LIFO Stack</strong></div>
+        <div class="hero-stat">Above<strong>Regular</strong></div>
+        <div class="hero-stat">Below<strong>Turing</strong></div>
+      </div>
+
+      <div class="hero-h" id="hero-title">
+        <span class="line"><span class="word">PUSH</span><span class="word ac"> DOWN</span></span>
+        <span class="line"><span class="word">AUTOMATON</span></span>
+      </div>
+
+      <div class="hero-bottom">
+        <p class="body-text g-up" style="font-size:14px">
+          A PDA extends a finite automaton with a <span style="color:var(--mint)">stack</span> — giving it the power to
+          recognize all context-free languages. Explore the formal theory, step through simulations, and see exactly how
+          transitions and the stack work together.
+        </p>
+        <div class="hero-cta g-up">
+          <a href="pages/simulate.html" class="btn-primary">Start Simulation ↗</a>
+          <a href="#theory" class="btn-outline">Theory ↓</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll g-fade">
+      <div class="hero-scroll-dot"></div>
+      <div class="hero-scroll-line"></div>
+      <span>Scroll to explore</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════ MARQUEE ═══════════════ -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item">Context-Free Languages <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Stack Memory <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Pushdown Automaton <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">LIFO Structure <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">δ(q, a, A) = (p, γ) <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Accept by Final State <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Chomsky Hierarchy Type 2 <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Context-Free Languages <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Stack Memory <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Pushdown Automaton <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">LIFO Structure <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">δ(q, a, A) = (p, γ) <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Accept by Final State <span class="marquee-dot">⬡</span></span>
+      <span class="marquee-item">Chomsky Hierarchy Type 2 <span class="marquee-dot">⬡</span></span>
     </div>
   </div>
-  <div class="header-right">
-    <span class="sim-status ready" id="sim-status">○ Ready</span>
-    <div class="status-pill"><span class="status-dot"></span>LIVE</div>
-  </div>
-</header>
 
-<!-- ═══════════════════════════════ TAB BAR ══ -->
-<nav class="tab-bar">
-  <div class="tab active" data-tab="simulate" onclick="switchTab('simulate')">
-    <span class="tab-icon">⚙</span>SIMULATE
-  </div>
-  <div class="tab" data-tab="learn" onclick="switchTab('learn')">
-    <span class="tab-icon">📖</span>LEARN PDA
-  </div>
-  <div class="tab" data-tab="examples" onclick="switchTab('examples')">
-    <span class="tab-icon">🧪</span>EXAMPLES
-  </div>
-</nav>
+  <!-- ═══════════════ THEORY ═══════════════ -->
+  <section class="section s-theory" id="theory">
+    <div class="section-inner">
+      <div class="bg-number">01</div>
+      <div class="theory-two">
 
-<!-- ═══════════════════════════════ MAIN ══════ -->
-<main class="main">
-
-  <!-- ──────────── SIMULATE TAB ──────────── -->
-  <div id="tab-simulate">
-    <div class="grid2">
-
-      <!-- LEFT COLUMN -->
-      <div class="col">
-
-        <!-- Config panel -->
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot"></span>CONFIGURATION</span>
-          </div>
-          <div class="panel-body">
-            <div class="field">
-              <label class="field-label" for="preset-select">Preset Automaton</label>
-              <select id="preset-select" onchange="loadPreset(this.value)">
-                <option value="anbn">L = { aⁿbⁿ | n ≥ 1 }</option>
-                <option value="palindrome">L = { ww^R | w ∈ {a,b}* }</option>
-                <option value="brackets">L = Balanced Brackets { ( ) [ ] { } }</option>
-                <option value="anbncn">L = { aⁿbⁿcⁿ } — Non-CFL Demo</option>
-              </select>
-              <span id="preset-desc" style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">Equal number of a's followed by b's</span>
-            </div>
-            <div class="field">
-              <label class="field-label" for="input-string">Input String</label>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="input-string" value="aaabbb" placeholder="// enter input string…" spellcheck="false"/>
-                <button class="btn btn-green" onclick="startSim()">▶ RUN</button>
+        <!-- LEFT: Formal Definition -->
+        <div>
+          <div class="sect-label g-left">01 — Formal Model</div>
+          <h2 class="section-h g-up">FORMAL <span class="ac">DEFINITION</span></h2>
+          <p class="body-text g-up" style="max-width:100%">
+            A Pushdown Automaton is formally defined as a 7-tuple. It generalizes a finite automaton by adding an
+            auxiliary stack that provides unbounded but LIFO-restricted memory. Unlike a DFA/NFA which can only remember
+            a finite amount, the PDA's stack can grow arbitrarily, enabling it to recognize <em
+              style="color:var(--mint)">context-free languages</em>.
+          </p>
+          <div class="theory-def g-scale">
+            <div
+              style="font-size:10px;font-family:var(--mono);color:var(--mint);letter-spacing:.12em;margin-bottom:16px;text-transform:uppercase">
+              M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
+            <div class="def-row"><span class="def-key">Q</span>
+              <div class="def-val">Finite set of <em>states</em>. The PDA exists in exactly one state at any moment.
               </div>
             </div>
-            <div class="btn-row">
-              <button class="btn btn-yellow" onclick="stepSim()" id="step-btn" disabled>STEP →</button>
-              <button class="btn btn-yellow" onclick="toggleAuto()" id="play-btn" disabled>▶ Auto</button>
-              <button class="btn btn-red"    onclick="resetSim()">↺ RESET</button>
+            <div class="def-row"><span class="def-key">Σ</span>
+              <div class="def-val">Input <em>alphabet</em>. Finite set of symbols read from the input tape
+                left-to-right.</div>
             </div>
-            <div class="slider-row">
-              <span>SLOW</span>
-              <input type="range" id="step-speed" min="100" max="1500" value="700"/>
-              <span>FAST</span>
+            <div class="def-row"><span class="def-key">Γ</span>
+              <div class="def-val">Stack <em>alphabet</em>. May differ from Σ. Symbols that can appear on the stack
+                (e.g. A, B, Z₀).</div>
+            </div>
+            <div class="def-row"><span class="def-key">δ</span>
+              <div class="def-val">Transition <em>function</em>: Q × (Σ ∪ {ε}) × Γ → <em>2^(Q×Γ*)</em>. May be
+                nondeterministic (return a set of choices).</div>
+            </div>
+            <div class="def-row"><span class="def-key">q₀</span>
+              <div class="def-val"><em>Start state</em>. q₀ ∈ Q. Computation begins here.</div>
+            </div>
+            <div class="def-row"><span class="def-key">Z₀</span>
+              <div class="def-val">Initial <em>stack symbol</em>. Z₀ ∈ Γ. Placed at the bottom of the stack before any
+                input is read. Acts as a sentinel / bottom marker.</div>
+            </div>
+            <div class="def-row"><span class="def-key">F</span>
+              <div class="def-val">Set of <em>accept states</em>. F ⊆ Q. Used in acceptance by final state.</div>
             </div>
           </div>
         </div>
 
-        <!-- Tape panel -->
-        <div class="panel tape-panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot" style="background:var(--yellow);box-shadow:0 0 8px rgba(255,204,0,.6)"></span>INPUT TAPE</span>
-          </div>
-          <div class="tape-track" id="tape-display">
-            <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">// no input loaded</span>
-          </div>
-        </div>
-
-        <!-- Canvas state diagram -->
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot" style="background:var(--blue);box-shadow:0 0 8px rgba(100,200,255,.6)"></span>STATE DIAGRAM</span>
-            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">canvas · live</span>
-          </div>
-          <canvas id="diagram-canvas"></canvas>
-        </div>
-
-      </div><!-- /left col -->
-
-      <!-- RIGHT COLUMN -->
-      <div class="col">
-
-        <!-- Stack -->
-        <div class="panel stack-panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot" style="background:var(--blue);box-shadow:0 0 8px rgba(100,200,255,.6)"></span>STACK MEMORY</span>
-            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">LIFO · top↑</span>
-          </div>
-          <div class="stack-body" id="stack-body">
-            <div class="stack-empty">[ EMPTY ]</div>
-          </div>
-          <div class="stack-label">↑ TOP &nbsp;·&nbsp; stack grows upward &nbsp;·&nbsp; Z = bottom marker</div>
-        </div>
-
-        <!-- Log -->
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px rgba(192,132,252,.6)"></span>TRANSITION LOG</span>
-          </div>
-          <div class="log-body" id="trans-log"></div>
-        </div>
-
-        <!-- Transition table -->
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title"><span class="dot"></span>TRANSITION TABLE — δ</span>
-          </div>
-          <div class="trans-scroll">
-            <table class="trans-table">
-              <thead>
-                <tr>
-                  <th>State</th><th>Input</th><th>Stack ↑</th><th>→ State</th><th>Push</th>
-                </tr>
-              </thead>
-              <tbody id="trans-tbody"></tbody>
-            </table>
+        <!-- RIGHT: Chomsky Hierarchy -->
+        <div>
+          <div class="sect-label g-right">Chomsky Hierarchy</div>
+          <h2 class="section-h g-up">PDA IN <span class="as">CONTEXT</span></h2>
+          <p class="body-text g-up" style="max-width:100%">
+            Noam Chomsky's hierarchy classifies formal grammars by their expressive power. PDAs correspond exactly to
+            Type 2 — context-free grammars. They are strictly more powerful than finite automata but strictly less
+            powerful than Turing Machines.
+          </p>
+          <div class="hierarchy g-scale">
+            <div class="hier-item">
+              <div class="hier-badge"
+                style="background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.3);color:#fb923c">T0</div>
+              <div>
+                <div class="hier-type" style="color:#fb923c">Recursively Enumerable</div>
+                <div class="hier-lang">Turing Machine · unrestricted grammars</div>
+              </div>
+            </div>
+            <div class="hier-item">
+              <div class="hier-badge"
+                style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fbbf24">T1</div>
+              <div>
+                <div class="hier-type" style="color:#fbbf24">Context-Sensitive</div>
+                <div class="hier-lang">Linear-bounded automaton · LBA</div>
+              </div>
+            </div>
+            <div class="hier-item current">
+              <div class="hier-badge"
+                style="background:rgba(181,255,217,.15);border:1px solid rgba(181,255,217,.4);color:var(--mint)">T2
+              </div>
+              <div>
+                <div class="hier-type" style="color:var(--mint)">Context-Free ← PDA lives here</div>
+                <div class="hier-lang">Pushdown Automaton · CFGs · aⁿbⁿ, palindromes</div>
+              </div>
+            </div>
+            <div class="hier-item">
+              <div class="hier-badge"
+                style="background:rgba(100,200,255,.12);border:1px solid rgba(100,200,255,.3);color:#64c8ff">T3</div>
+              <div>
+                <div class="hier-type" style="color:#64c8ff">Regular</div>
+                <div class="hier-lang">DFA / NFA · finite automata · (ab)*</div>
+              </div>
+            </div>
           </div>
         </div>
-
-      </div><!-- /right col -->
-    </div><!-- /grid2 -->
-
-    <!-- Metrics row -->
-    <div class="metrics-row" style="margin-top:18px">
-      <div class="metric" id="mc-state">
-        <div class="metric-label">Current State</div>
-        <div class="metric-val" id="m-state">—</div>
-      </div>
-      <div class="metric" id="mc-steps">
-        <div class="metric-label">Steps Taken</div>
-        <div class="metric-val" id="m-steps">0</div>
-      </div>
-      <div class="metric" id="mc-depth">
-        <div class="metric-label">Stack Depth</div>
-        <div class="metric-val" id="m-depth">0</div>
       </div>
     </div>
-  </div><!-- /tab-simulate -->
+  </section>
 
+  <!-- ═══════════════ HOW TRANSITIONS WORK ═══════════════ -->
+  <section class="section s-how" id="how">
+    <div class="section-inner">
+      <div class="bg-number">02</div>
+      <div class="sect-label g-left">02 — Transitions & Acceptance</div>
+      <h2 class="section-h g-up">HOW <span class="ac">TRANSITIONS</span> WORK</h2>
+      <p class="body-text g-up">Each computation step of a PDA is determined by three inputs: the current state, the
+        next input symbol (or ε), and the current stack top. The transition function maps these to a new configuration.
+      </p>
 
-  <!-- ──────────── LEARN TAB ──────────── -->
-  <div id="tab-learn" style="display:none">
-    <div class="learn-grid">
-
-      <div class="learn-card">
-        <div class="learn-card-title">// WHAT IS A PUSHDOWN AUTOMATON?</div>
-        <p class="learn-body">
-          A <strong style="color:var(--green)">Pushdown Automaton (PDA)</strong> is a finite automaton enhanced with
-          an auxiliary <strong style="color:var(--blue)">stack memory</strong>. The stack provides unbounded, LIFO
-          storage — enabling PDAs to recognize a strictly larger class of languages than regular finite automata:
-          the class of <em style="color:var(--yellow)">context-free languages (CFL)</em>.
-        </p>
-        <div class="info-box">
-          💡 PDA = Finite Automaton + Stack &nbsp;|&nbsp; Stack = unlimited LIFO memory
+      <div class="how-steps">
+        <div class="how-step g-up">
+          <div class="how-step-icon">📖</div>
+          <div class="how-step-title">① Read Input</div>
+          <div class="how-step-body">Consume one symbol from the input tape (or use an ε-transition, which consumes
+            nothing). The read head moves strictly left to right and cannot go back.</div>
+          <div class="how-step-num">01</div>
         </div>
-        <div class="learn-card-title" style="font-size:12px;margin-top:14px">Formal Definition: M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
-        <div class="formal-def">
-          <div class="formal-row"><span class="fk">Q</span><span>— finite set of states</span></div>
-          <div class="formal-row"><span class="fk">Σ</span><span>— input alphabet (symbols read from tape)</span></div>
-          <div class="formal-row"><span class="fk">Γ</span><span>— stack alphabet (symbols pushed/popped)</span></div>
-          <div class="formal-row"><span class="fk">δ</span><span>— transition function: Q × (Σ∪{ε}) × Γ → 2^(Q×Γ*)</span></div>
-          <div class="formal-row"><span class="fk">q₀</span><span>— initial state</span></div>
-          <div class="formal-row"><span class="fk">Z₀</span><span>— initial stack symbol (bottom-of-stack marker)</span></div>
-          <div class="formal-row"><span class="fk">F</span><span>— set of final/accept states</span></div>
+        <div class="how-step g-up">
+          <div class="how-step-icon">📦</div>
+          <div class="how-step-title">② Inspect Stack</div>
+          <div class="how-step-body">Look at the top of the stack (top symbol only is visible). The current stack top
+            determines which transitions are applicable — it is part of the transition guard.</div>
+          <div class="how-step-num">02</div>
         </div>
-      </div>
-
-      <div class="learn-card">
-        <div class="learn-card-title">// HOW TRANSITIONS WORK</div>
-        <div class="info-box">
-          δ(q, a, A) = (p, γ) &nbsp;→&nbsp; In state <strong>q</strong>, reading '<strong>a</strong>', stack top '<strong>A</strong>':<br/>
-          → move to state <strong>p</strong>, replace A with <strong>γ</strong> on the stack
-        </div>
-        <p class="learn-body" style="margin-top:10px">On each step the PDA:</p>
-        <ul style="margin:8px 0 0 18px;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text2)">
-          <li>Reads one input symbol (or <span style="color:var(--yellow)">ε</span> — no input consumed)</li>
-          <li>Peeks at the current <span style="color:var(--blue)">stack top</span></li>
-          <li>Chooses a rule: <span style="color:var(--green)">push γ</span> replaces top, <span style="color:var(--red)">push ε</span> pops the top</li>
-          <li>ε-transitions allow nondeterminism — the simulator takes the first valid match</li>
-        </ul>
-        <div class="two-col" style="margin-top:16px">
-          <div class="mini-card">
-            <div class="mini-card-title">By Final State</div>
-            <div class="mini-card-body">Accept when all input consumed and current state ∈ F. Stack content irrelevant.</div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-card-title">By Empty Stack</div>
-            <div class="mini-card-body">Accept when all input consumed and stack is empty. State irrelevant. Equivalent power.</div>
-          </div>
+        <div class="how-step g-up">
+          <div class="how-step-icon">🔄</div>
+          <div class="how-step-title">③ Transition</div>
+          <div class="how-step-body">Pop the stack top, push the new string γ onto the stack. If γ = ε that's a pure
+            pop. Move to the new state. Repeat until input exhausted.</div>
+          <div class="how-step-num">03</div>
         </div>
       </div>
 
-      <div class="learn-card">
-        <div class="learn-card-title">// REAL-WORLD APPLICATIONS</div>
-        <div class="app-grid">
-          <div class="app-item" style="border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.04)">
-            <div class="app-item-title" style="color:var(--green)">⟨/⟩ Parser Design</div>
-            <div class="app-item-body">CFGs describe syntax; PDAs parse them. Every compiler front-end relies on this.</div>
+      <div class="trans-block g-scale">
+        <h4>Transition Notation: δ(q, a, A) = (p, γ)</h4>
+        <div class="trans-notation">δ(q, a, A) = (p, γ)</div>
+        <div class="trans-steps">
+          <div class="trans-step-row"><span>→</span><span>Current state: <em style="color:var(--white)">q</em></span>
           </div>
-          <div class="app-item" style="border-color:rgba(100,200,255,.2);background:rgba(100,200,255,.04)">
-            <div class="app-item-title" style="color:var(--blue)">🏷 XML/HTML Validation</div>
-            <div class="app-item-body">Matching open &amp; close tags requires exactly the stack memory a PDA provides.</div>
+          <div class="trans-step-row"><span>→</span><span>Input symbol consumed: <em style="color:var(--white)">'a'</em>
+              (or ε for no consumption)</span></div>
+          <div class="trans-step-row"><span>→</span><span>Stack top popped: <em
+                style="color:var(--white)">'A'</em></span></div>
+          <div class="trans-step-row"><span>→</span><span>Move to new state: <em style="color:var(--mint)">p</em></span>
           </div>
-          <div class="app-item" style="border-color:rgba(192,132,252,.2);background:rgba(192,132,252,.04)">
-            <div class="app-item-title" style="color:var(--purple)">🔧 Compiler Analysis</div>
-            <div class="app-item-body">Recursive descent + LL/LR parsers implement PDA transitions explicitly.</div>
-          </div>
-          <div class="app-item" style="border-color:rgba(255,204,0,.2);background:rgba(255,204,0,.04)">
-            <div class="app-item-title" style="color:var(--yellow)">⚖ Expression Eval</div>
-            <div class="app-item-body">Balanced parentheses, operator precedence, and arithmetic grammars.</div>
+          <div class="trans-step-row"><span>→</span><span>Push string γ onto stack. If γ = AB, then B is pushed first, A
+              ends up on top. If γ = ε, stack shrinks (pure pop).</span></div>
+        </div>
+        <div style="margin-top:24px">
+          <div
+            style="font-size:10px;font-family:var(--mono);color:var(--mint);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">
+            Acceptance Modes — Both Have Equal Power</div>
+          <div class="accept-grid">
+            <div class="accept-item">
+              <div class="accept-item-title">By Final State</div>
+              <div class="accept-item-body">After all input is read, if the current state q ∈ F the string is accepted.
+                Stack contents are irrelevant. Commonly used in simulator implementations.</div>
+            </div>
+            <div class="accept-item">
+              <div class="accept-item-title">By Empty Stack</div>
+              <div class="accept-item-body">After all input is read, if the stack is completely empty the string is
+                accepted. The state is irrelevant. Formally equivalent — any PDA can be converted between the two modes.
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
-  </div><!-- /tab-learn -->
+  </section>
 
-
-  <!-- ──────────── EXAMPLES TAB ──────────── -->
-  <div id="tab-examples" style="display:none">
-    <div class="ex-grid">
-
-      <div class="ex-card">
-        <div class="ex-title">// aⁿbⁿ — Equal a's and b's</div>
-        <div class="ex-body">The classic PDA example. Push one 'A' for every 'a' read, then pop one 'A' for every 'b'. Accept when input is consumed and only Z₀ remains on the stack.</div>
-        <div class="ex-btns">
-          <button class="btn btn-green"  onclick="runExample('anbn','ab')">ab ✓</button>
-          <button class="btn btn-green"  onclick="runExample('anbn','aabb')">aabb ✓</button>
-          <button class="btn btn-green"  onclick="runExample('anbn','aaabbb')">aaabbb ✓</button>
-          <button class="btn btn-red"    onclick="runExample('anbn','aab')">aab ✗</button>
-          <button class="btn btn-red"    onclick="runExample('anbn','abb')">abb ✗</button>
-          <button class="btn btn-red"    onclick="runExample('anbn','abab')">abab ✗</button>
+  <!-- ═══════════════ PUMPING LEMMA ═══════════════ -->
+  <section class="section s-pump" id="pumping">
+    <div class="section-inner">
+      <div class="bg-number">03</div>
+      <div class="pump-grid">
+        <div>
+          <div class="sect-label g-left">03 — CFL Properties</div>
+          <h2 class="section-h g-up">PUMPING <span class="ac">LEMMA</span></h2>
+          <p class="body-text g-up" style="max-width:100%">The Pumping Lemma for CFLs is used to prove that certain
+            languages are NOT context-free — and therefore cannot be recognized by any PDA. If a language fails the
+            lemma, no PDA can recognize it.</p>
+          <div class="pump-box g-scale">
+            <p><strong>Statement:</strong> For every CFL L, there exists a pumping length p such that any string s ∈ L
+              with |s| ≥ p can be split into five parts: s = uvxyz, satisfying all three conditions:</p>
+            <div class="pump-steps">
+              <div class="pump-step">
+                <div class="pump-n">①</div>
+                <div class="pump-text"><strong>|vy| ≥ 1</strong> — at least one of v or y is non-empty</div>
+              </div>
+              <div class="pump-step">
+                <div class="pump-n">②</div>
+                <div class="pump-text"><strong>|vxy| ≤ p</strong> — the pumpable middle is bounded by p</div>
+              </div>
+              <div class="pump-step">
+                <div class="pump-n">③</div>
+                <div class="pump-text"><strong>uvⁱxyⁱz ∈ L for all i ≥ 0</strong> — pumping v and y any number of times
+                  keeps the string in L</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="sect-label g-right" style="visibility:hidden">—</div>
+          <h2 class="section-h g-up">WHY <span style="color:#ff5050">aⁿbⁿcⁿ</span> FAILS</h2>
+          <p class="body-text g-up" style="max-width:100%">The language L = {aⁿbⁿcⁿ | n ≥ 1} is the classic example of a
+            language that is NOT context-free. Any pumping attempt breaks the equal-count condition.</p>
+          <div class="pump-box g-scale" style="border-left:3px solid #ff5050">
+            <p><strong>Why a PDA cannot count three things:</strong> A PDA has one stack — providing one LIFO counter.
+              To verify aⁿbⁿcⁿ you need to count n a's, then verify n b's (depleting the counter), then verify n c's
+              (requiring a second fresh counter). Once the stack is depleted matching b's, no information about n
+              remains for the c's.</p>
+            <p style="margin-top:12px"><strong>Pumping Lemma proof sketch:</strong> Take s = aᵖbᵖcᵖ. Any split uvxyz
+              where |vxy| ≤ p means vxy spans at most two symbol types. Pumping v and y (i=2) increases at most two
+              symbol counts — breaking the equality aⁿbⁿcⁿ.</p>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap" class="g-up">
+            <a href="pages/simulate.html?preset=anbncn&input=aabbcc" class="btn-outline"
+              style="text-decoration:none;font-size:11px;padding:10px 18px">See it Reject in Simulator ↗</a>
+          </div>
         </div>
       </div>
-
-      <div class="ex-card">
-        <div class="ex-title">// ww^R — Even-length Palindromes</div>
-        <div class="ex-body">Push the first half onto the stack, nondeterministically guess the midpoint, then pop matching symbols for the reversed second half.</div>
-        <div class="ex-btns">
-          <button class="btn btn-green"  onclick="runExample('palindrome','abba')">abba ✓</button>
-          <button class="btn btn-green"  onclick="runExample('palindrome','aabbaa')">aabbaa ✓</button>
-          <button class="btn btn-green"  onclick="runExample('palindrome','aaaa')">aaaa ✓</button>
-          <button class="btn btn-red"    onclick="runExample('palindrome','abab')">abab ✗</button>
-          <button class="btn btn-red"    onclick="runExample('palindrome','abc')">abc ✗</button>
-        </div>
-      </div>
-
-      <div class="ex-card">
-        <div class="ex-title">// Balanced Brackets — ( ) [ ] { }</div>
-        <div class="ex-body">Push every opening bracket. On seeing a close bracket, verify the matching open bracket is on top of the stack, then pop it. Accept when input and stack are empty.</div>
-        <div class="ex-btns">
-          <button class="btn btn-green"  onclick="runExample('brackets','()')">() ✓</button>
-          <button class="btn btn-green"  onclick="runExample('brackets','([]{})')">([]{}) ✓</button>
-          <button class="btn btn-green"  onclick="runExample('brackets','((()))')">((()))  ✓</button>
-          <button class="btn btn-red"    onclick="runExample('brackets','([)]')">(][ ✗</button>
-          <button class="btn btn-red"    onclick="runExample('brackets','((()')">(((  ✗</button>
-        </div>
-      </div>
-
-      <div class="ex-card danger">
-        <div class="ex-title">// aⁿbⁿcⁿ — NOT Context-Free ⚠</div>
-        <div class="ex-body">PDAs <strong>cannot</strong> recognize this language. It would need two independent counters, but the stack only provides one LIFO memory. This demonstrates the fundamental limit of PDAs — a Turing Machine would be required. The simulator will always reject.</div>
-        <div class="ex-btns">
-          <button class="btn btn-red" onclick="runExample('anbncn','aabbcc')">Try aabbcc (rejects)</button>
-          <button class="btn btn-red" onclick="runExample('anbncn','abc')">Try abc (rejects)</button>
-        </div>
-      </div>
-
     </div>
-  </div><!-- /tab-examples -->
+  </section>
 
-</main><!-- /main -->
+  <!-- ═══════════════ REAL-WORLD APPLICATIONS ═══════════════ -->
+  <section class="section s-apps" id="applications">
+    <div class="section-inner">
+      <div class="bg-number" style="color:rgba(255,255,255,.03)">04</div>
+      <div class="sect-label g-left">04 — Applications</div>
+      <h2 class="section-h g-up">REAL-WORLD <span class="ac">APPLICATIONS</span></h2>
+      <p class="body-text g-up">Context-free languages and PDAs are not academic curiosities — they underpin nearly
+        every programming tool you use daily.</p>
+      <div class="apps-grid">
+        <div class="app-card" style="border-color:rgba(181,255,217,.2);background:rgba(181,255,217,.03)">
+          <div class="app-icon" style="color:var(--mint)">⟨/⟩</div>
+          <div class="app-title">Compiler Front-Ends</div>
+          <div class="app-body">Every language parser (C, Python, JavaScript, Rust) uses a PDA-equivalent algorithm. The
+            production rules of a programming language grammar are directly a CFG parsed by an LALR or LL PDA.</div>
+          <div class="app-tag">gcc · LLVM · V8</div>
+        </div>
+        <div class="app-card" style="border-color:rgba(100,200,255,.2);background:rgba(100,200,255,.03)">
+          <div class="app-icon" style="color:#64c8ff">🏷</div>
+          <div class="app-title">XML &amp; HTML Parsing</div>
+          <div class="app-body">Matching open/close tags (e.g. &lt;div&gt;…&lt;/div&gt;) is exactly the
+            balanced-brackets problem. Every browser's DOM parser and XML processor implements a PDA internally to
+            verify nesting.</div>
+          <div class="app-tag">WebKit · Blink · libxml2</div>
+        </div>
+        <div class="app-card" style="border-color:rgba(192,132,252,.2);background:rgba(192,132,252,.03)">
+          <div class="app-icon" style="color:#c084fc">🔧</div>
+          <div class="app-title">Programming Language Design</div>
+          <div class="app-body">Language designers specify syntax via Context-Free Grammars and use parser generators
+            (YACC, ANTLR, Bison) that automatically synthesize the PDA from grammar rules.</div>
+          <div class="app-tag">ANTLR · Bison · YACC</div>
+        </div>
+        <div class="app-card" style="border-color:rgba(251,146,60,.2);background:rgba(251,146,60,.03)">
+          <div class="app-icon" style="color:#fb923c">⚖</div>
+          <div class="app-title">Expression Evaluation</div>
+          <div class="app-body">Arithmetic expressions like (a + b) * (c - d) have nested structure. Shunting-Yard
+            algorithm and recursive descent parsers are PDA implementations that handle operator precedence.</div>
+          <div class="app-tag">SQL · Math parsers · REPL</div>
+        </div>
+        <div class="app-card" style="border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.03)">
+          <div class="app-icon" style="color:#fbbf24">🛡</div>
+          <div class="app-title">Natural Language Processing</div>
+          <div class="app-body">Phrase-structure grammars in NLP (Chomsky's own contribution) use CFGs to parse
+            sentences. CYK and Earley algorithms are PDA variants adapted for ambiguous natural language.</div>
+          <div class="app-tag">NLP · CYK · Earley</div>
+        </div>
+        <div class="app-card" style="border-color:rgba(181,255,217,.15);background:rgba(181,255,217,.02)">
+          <div class="app-icon" style="color:var(--mint)">📦</div>
+          <div class="app-title">Serialization Formats</div>
+          <div class="app-body">JSON, YAML, and TOML parsers validate nested structure using PDA-equivalent logic. The
+            recursive nesting of objects and arrays is a direct CFL application.</div>
+          <div class="app-tag">JSON · YAML · TOML</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<script src="pda.js"></script>
+  <!-- ═══════════════ CFL LANGUAGES ═══════════════ -->
+  <section class="section s-langs" id="langs">
+    <div class="section-inner">
+      <div class="bg-number" style="color:rgba(0,0,0,.06)">04</div>
+      <div class="sect-label">04 — Interactive Examples</div>
+      <h2 class="section-h g-up">CFL <span style="color:rgba(0,0,0,.35)">LANGUAGES</span></h2>
+      <p class="body-text g-up">Context-free languages are exactly the languages recognized by PDAs. Each card links to
+        a live simulation — watch the stack animate step by step.</p>
+      <div class="lang-examples">
+        <div class="lang-card g-scale">
+          <div class="lang-card-tag">Classic CFL · Type 2</div>
+          <div class="lang-card-name">aⁿbⁿ</div>
+          <div class="lang-card-formula">L = { aⁿbⁿ | n ≥ 1 }</div>
+          <div class="lang-card-body">Push one 'A' per 'a', then pop one 'A' per 'b'. Accept when stack returns to Z₀
+            only. The simplest demonstration of stack counting.</div>
+          <a href="pages/simulate.html?preset=anbn" class="lang-card-btn">Simulate Live →</a>
+        </div>
+        <div class="lang-card g-scale">
+          <div class="lang-card-tag">Palindrome · Nondeterministic</div>
+          <div class="lang-card-name">ww^R</div>
+          <div class="lang-card-formula">L = { ww^R | w ∈ {a,b}* }</div>
+          <div class="lang-card-body">Push the first half, then nondeterministically guess the midpoint and pop while
+            matching the reversed second half. Requires nondeterminism.</div>
+          <a href="pages/simulate.html?preset=palindrome" class="lang-card-btn">Simulate Live →</a>
+        </div>
+        <div class="lang-card g-scale">
+          <div class="lang-card-tag">Balanced Brackets · Compiler Target</div>
+          <div class="lang-card-name">{ } [ ] ( )</div>
+          <div class="lang-card-formula">L = balanced brackets</div>
+          <div class="lang-card-body">Push every open bracket. On seeing a close bracket, verify and pop the matching
+            open bracket from the stack top. Used in every parser.</div>
+          <a href="pages/simulate.html?preset=brackets" class="lang-card-btn">Simulate Live →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CTA ═══════════════ -->
+  <section class="section s-cta" id="cta">
+    <div class="section-inner" style="text-align:center">
+      <div class="bg-number" style="left:50%;transform:translateX(-50%);right:auto;bottom:-30px">05</div>
+      <div class="sect-label g-left" style="justify-content:center">05 — Explore</div>
+      <div class="cta-big g-up">OPEN THE<br /><span class="under ac">SIMULATOR</span></div>
+      <p class="body-text g-up" style="margin:24px auto 0;text-align:center">Step through transitions, watch the stack
+        animate in real time, and see whether your string is accepted or rejected.</p>
+      <div class="cta-btns g-up">
+        <a href="pages/simulate.html" class="btn-primary">Open Simulator ↗</a>
+        <a href="pages/examples.html" class="btn-outline">Browse Examples →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">PDA<span>.</span></div>
+    <div class="footer-copy">// Pushdown Automaton · Interactive Theory & Simulator</div>
+    <ul class="footer-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="pages/simulate.html">Simulate</a></li>
+      <li><a href="pages/examples.html">Examples</a></li>
+    </ul>
+  </footer>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="assets/js/index.js"></script>
 </body>
+
 </html>
