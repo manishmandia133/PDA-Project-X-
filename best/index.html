@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDA Simulator — Pushdown Automaton Visualizer</title>
+  <meta name="description" content="Interactive Pushdown Automaton (PDA) simulator with canvas state diagram, animated tape, stack visualization, and step-by-step transition tracing."/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ══ -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-icon">⬡</div>
+    <div>
+      <div class="header-title">PDA_SIMULATOR</div>
+      <div class="header-sub">// Pushdown Automaton · Interactive Visualizer v2.0</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="sim-status ready" id="sim-status">○ Ready</span>
+    <div class="status-pill"><span class="status-dot"></span>LIVE</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ TAB BAR ══ -->
+<nav class="tab-bar">
+  <div class="tab active" data-tab="simulate" onclick="switchTab('simulate')">
+    <span class="tab-icon">⚙</span>SIMULATE
+  </div>
+  <div class="tab" data-tab="learn" onclick="switchTab('learn')">
+    <span class="tab-icon">📖</span>LEARN PDA
+  </div>
+  <div class="tab" data-tab="examples" onclick="switchTab('examples')">
+    <span class="tab-icon">🧪</span>EXAMPLES
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ══════ -->
+<main class="main">
+
+  <!-- ──────────── SIMULATE TAB ──────────── -->
+  <div id="tab-simulate">
+    <div class="grid2">
+
+      <!-- LEFT COLUMN -->
+      <div class="col">
+
+        <!-- Config panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot"></span>CONFIGURATION</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label class="field-label" for="preset-select">Preset Automaton</label>
+              <select id="preset-select" onchange="loadPreset(this.value)">
+                <option value="anbn">L = { aⁿbⁿ | n ≥ 1 }</option>
+                <option value="palindrome">L = { ww^R | w ∈ {a,b}* }</option>
+                <option value="brackets">L = Balanced Brackets { ( ) [ ] { } }</option>
+                <option value="anbncn">L = { aⁿbⁿcⁿ } — Non-CFL Demo</option>
+              </select>
+              <span id="preset-desc" style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">Equal number of a's followed by b's</span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="input-string">Input String</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="input-string" value="aaabbb" placeholder="// enter input string…" spellcheck="false"/>
+                <button class="btn btn-green" onclick="startSim()">▶ RUN</button>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-yellow" onclick="stepSim()" id="step-btn" disabled>STEP →</button>
+              <button class="btn btn-yellow" onclick="toggleAuto()" id="play-btn" disabled>▶ Auto</button>
+              <button class="btn btn-red"    onclick="resetSim()">↺ RESET</button>
+            </div>
+            <div class="slider-row">
+              <span>SLOW</span>
+              <input type="range" id="step-speed" min="100" max="1500" value="700"/>
+              <span>FAST</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tape panel -->
+        <div class="panel tape-panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot" style="background:var(--yellow);box-shadow:0 0 8px rgba(255,204,0,.6)"></span>INPUT TAPE</span>
+          </div>
+          <div class="tape-track" id="tape-display">
+            <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">// no input loaded</span>
+          </div>
+        </div>
+
+        <!-- Canvas state diagram -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot" style="background:var(--blue);box-shadow:0 0 8px rgba(100,200,255,.6)"></span>STATE DIAGRAM</span>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">canvas · live</span>
+          </div>
+          <canvas id="diagram-canvas"></canvas>
+        </div>
+
+      </div><!-- /left col -->
+
+      <!-- RIGHT COLUMN -->
+      <div class="col">
+
+        <!-- Stack -->
+        <div class="panel stack-panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot" style="background:var(--blue);box-shadow:0 0 8px rgba(100,200,255,.6)"></span>STACK MEMORY</span>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">LIFO · top↑</span>
+          </div>
+          <div class="stack-body" id="stack-body">
+            <div class="stack-empty">[ EMPTY ]</div>
+          </div>
+          <div class="stack-label">↑ TOP &nbsp;·&nbsp; stack grows upward &nbsp;·&nbsp; Z = bottom marker</div>
+        </div>
+
+        <!-- Log -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px rgba(192,132,252,.6)"></span>TRANSITION LOG</span>
+          </div>
+          <div class="log-body" id="trans-log"></div>
+        </div>
+
+        <!-- Transition table -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title"><span class="dot"></span>TRANSITION TABLE — δ</span>
+          </div>
+          <div class="trans-scroll">
+            <table class="trans-table">
+              <thead>
+                <tr>
+                  <th>State</th><th>Input</th><th>Stack ↑</th><th>→ State</th><th>Push</th>
+                </tr>
+              </thead>
+              <tbody id="trans-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /right col -->
+    </div><!-- /grid2 -->
+
+    <!-- Metrics row -->
+    <div class="metrics-row" style="margin-top:18px">
+      <div class="metric" id="mc-state">
+        <div class="metric-label">Current State</div>
+        <div class="metric-val" id="m-state">—</div>
+      </div>
+      <div class="metric" id="mc-steps">
+        <div class="metric-label">Steps Taken</div>
+        <div class="metric-val" id="m-steps">0</div>
+      </div>
+      <div class="metric" id="mc-depth">
+        <div class="metric-label">Stack Depth</div>
+        <div class="metric-val" id="m-depth">0</div>
+      </div>
+    </div>
+  </div><!-- /tab-simulate -->
+
+
+  <!-- ──────────── LEARN TAB ──────────── -->
+  <div id="tab-learn" style="display:none">
+    <div class="learn-grid">
+
+      <div class="learn-card">
+        <div class="learn-card-title">// WHAT IS A PUSHDOWN AUTOMATON?</div>
+        <p class="learn-body">
+          A <strong style="color:var(--green)">Pushdown Automaton (PDA)</strong> is a finite automaton enhanced with
+          an auxiliary <strong style="color:var(--blue)">stack memory</strong>. The stack provides unbounded, LIFO
+          storage — enabling PDAs to recognize a strictly larger class of languages than regular finite automata:
+          the class of <em style="color:var(--yellow)">context-free languages (CFL)</em>.
+        </p>
+        <div class="info-box">
+          💡 PDA = Finite Automaton + Stack &nbsp;|&nbsp; Stack = unlimited LIFO memory
+        </div>
+        <div class="learn-card-title" style="font-size:12px;margin-top:14px">Formal Definition: M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
+        <div class="formal-def">
+          <div class="formal-row"><span class="fk">Q</span><span>— finite set of states</span></div>
+          <div class="formal-row"><span class="fk">Σ</span><span>— input alphabet (symbols read from tape)</span></div>
+          <div class="formal-row"><span class="fk">Γ</span><span>— stack alphabet (symbols pushed/popped)</span></div>
+          <div class="formal-row"><span class="fk">δ</span><span>— transition function: Q × (Σ∪{ε}) × Γ → 2^(Q×Γ*)</span></div>
+          <div class="formal-row"><span class="fk">q₀</span><span>— initial state</span></div>
+          <div class="formal-row"><span class="fk">Z₀</span><span>— initial stack symbol (bottom-of-stack marker)</span></div>
+          <div class="formal-row"><span class="fk">F</span><span>— set of final/accept states</span></div>
+        </div>
+      </div>
+
+      <div class="learn-card">
+        <div class="learn-card-title">// HOW TRANSITIONS WORK</div>
+        <div class="info-box">
+          δ(q, a, A) = (p, γ) &nbsp;→&nbsp; In state <strong>q</strong>, reading '<strong>a</strong>', stack top '<strong>A</strong>':<br/>
+          → move to state <strong>p</strong>, replace A with <strong>γ</strong> on the stack
+        </div>
+        <p class="learn-body" style="margin-top:10px">On each step the PDA:</p>
+        <ul style="margin:8px 0 0 18px;display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text2)">
+          <li>Reads one input symbol (or <span style="color:var(--yellow)">ε</span> — no input consumed)</li>
+          <li>Peeks at the current <span style="color:var(--blue)">stack top</span></li>
+          <li>Chooses a rule: <span style="color:var(--green)">push γ</span> replaces top, <span style="color:var(--red)">push ε</span> pops the top</li>
+          <li>ε-transitions allow nondeterminism — the simulator takes the first valid match</li>
+        </ul>
+        <div class="two-col" style="margin-top:16px">
+          <div class="mini-card">
+            <div class="mini-card-title">By Final State</div>
+            <div class="mini-card-body">Accept when all input consumed and current state ∈ F. Stack content irrelevant.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-title">By Empty Stack</div>
+            <div class="mini-card-body">Accept when all input consumed and stack is empty. State irrelevant. Equivalent power.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="learn-card">
+        <div class="learn-card-title">// REAL-WORLD APPLICATIONS</div>
+        <div class="app-grid">
+          <div class="app-item" style="border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.04)">
+            <div class="app-item-title" style="color:var(--green)">⟨/⟩ Parser Design</div>
+            <div class="app-item-body">CFGs describe syntax; PDAs parse them. Every compiler front-end relies on this.</div>
+          </div>
+          <div class="app-item" style="border-color:rgba(100,200,255,.2);background:rgba(100,200,255,.04)">
+            <div class="app-item-title" style="color:var(--blue)">🏷 XML/HTML Validation</div>
+            <div class="app-item-body">Matching open &amp; close tags requires exactly the stack memory a PDA provides.</div>
+          </div>
+          <div class="app-item" style="border-color:rgba(192,132,252,.2);background:rgba(192,132,252,.04)">
+            <div class="app-item-title" style="color:var(--purple)">🔧 Compiler Analysis</div>
+            <div class="app-item-body">Recursive descent + LL/LR parsers implement PDA transitions explicitly.</div>
+          </div>
+          <div class="app-item" style="border-color:rgba(255,204,0,.2);background:rgba(255,204,0,.04)">
+            <div class="app-item-title" style="color:var(--yellow)">⚖ Expression Eval</div>
+            <div class="app-item-body">Balanced parentheses, operator precedence, and arithmetic grammars.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab-learn -->
+
+
+  <!-- ──────────── EXAMPLES TAB ──────────── -->
+  <div id="tab-examples" style="display:none">
+    <div class="ex-grid">
+
+      <div class="ex-card">
+        <div class="ex-title">// aⁿbⁿ — Equal a's and b's</div>
+        <div class="ex-body">The classic PDA example. Push one 'A' for every 'a' read, then pop one 'A' for every 'b'. Accept when input is consumed and only Z₀ remains on the stack.</div>
+        <div class="ex-btns">
+          <button class="btn btn-green"  onclick="runExample('anbn','ab')">ab ✓</button>
+          <button class="btn btn-green"  onclick="runExample('anbn','aabb')">aabb ✓</button>
+          <button class="btn btn-green"  onclick="runExample('anbn','aaabbb')">aaabbb ✓</button>
+          <button class="btn btn-red"    onclick="runExample('anbn','aab')">aab ✗</button>
+          <button class="btn btn-red"    onclick="runExample('anbn','abb')">abb ✗</button>
+          <button class="btn btn-red"    onclick="runExample('anbn','abab')">abab ✗</button>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-title">// ww^R — Even-length Palindromes</div>
+        <div class="ex-body">Push the first half onto the stack, nondeterministically guess the midpoint, then pop matching symbols for the reversed second half.</div>
+        <div class="ex-btns">
+          <button class="btn btn-green"  onclick="runExample('palindrome','abba')">abba ✓</button>
+          <button class="btn btn-green"  onclick="runExample('palindrome','aabbaa')">aabbaa ✓</button>
+          <button class="btn btn-green"  onclick="runExample('palindrome','aaaa')">aaaa ✓</button>
+          <button class="btn btn-red"    onclick="runExample('palindrome','abab')">abab ✗</button>
+          <button class="btn btn-red"    onclick="runExample('palindrome','abc')">abc ✗</button>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="ex-title">// Balanced Brackets — ( ) [ ] { }</div>
+        <div class="ex-body">Push every opening bracket. On seeing a close bracket, verify the matching open bracket is on top of the stack, then pop it. Accept when input and stack are empty.</div>
+        <div class="ex-btns">
+          <button class="btn btn-green"  onclick="runExample('brackets','()')">() ✓</button>
+          <button class="btn btn-green"  onclick="runExample('brackets','([]{})')">([]{}) ✓</button>
+          <button class="btn btn-green"  onclick="runExample('brackets','((()))')">((()))  ✓</button>
+          <button class="btn btn-red"    onclick="runExample('brackets','([)]')">(][ ✗</button>
+          <button class="btn btn-red"    onclick="runExample('brackets','((()')">(((  ✗</button>
+        </div>
+      </div>
+
+      <div class="ex-card danger">
+        <div class="ex-title">// aⁿbⁿcⁿ — NOT Context-Free ⚠</div>
+        <div class="ex-body">PDAs <strong>cannot</strong> recognize this language. It would need two independent counters, but the stack only provides one LIFO memory. This demonstrates the fundamental limit of PDAs — a Turing Machine would be required. The simulator will always reject.</div>
+        <div class="ex-btns">
+          <button class="btn btn-red" onclick="runExample('anbncn','aabbcc')">Try aabbcc (rejects)</button>
+          <button class="btn btn-red" onclick="runExample('anbncn','abc')">Try abc (rejects)</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab-examples -->
+
+</main><!-- /main -->
+
+<script src="pda.js"></script>
+</body>
+</html>
