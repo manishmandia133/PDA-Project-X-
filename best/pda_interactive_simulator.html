@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PDA Interactive Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0d14;--bg2:#0f1220;--bg3:#141828;--glass:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --blue:#4f8ef7;--blue2:#7cb9ff;--green:#34d399;--red:#f87171;
+  --purple:#a78bfa;--orange:#fb923c;--yellow:#fbbf24;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  --radius:12px;--radius2:8px;--radius3:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* BG */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 20% 10%,rgba(79,142,247,0.08) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 50% at 80% 80%,rgba(167,139,250,0.06) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* HEADER */
+.header{position:relative;z-index:10;padding:28px 32px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(10,13,20,0.8);backdrop-filter:blur(20px)}
+.header-left h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.5px}
+.header-left p{font-size:12px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.header-badge{display:flex;align-items:center;gap:6px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.25);border-radius:var(--radius3);padding:5px 12px;font-size:11px;color:var(--green);font-weight:500}
+.header-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+
+/* TABS */
+.tab-bar{position:sticky;top:0;z-index:9;display:flex;gap:0;padding:0 32px;background:rgba(10,13,20,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.tab{padding:14px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .2s;position:relative;letter-spacing:.01em}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:2px 2px 0 0}
+
+/* LAYOUT */
+.main{position:relative;z-index:1;padding:24px 32px;max-width:1400px;margin:0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+[style*="display:none"]{display:none!important}
+
+/* GLASS CARD */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);padding:20px;backdrop-filter:blur(12px);transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+
+/* CONTROLS */
+.ctrl-label{font-size:11px;color:var(--text3);display:block;margin-bottom:6px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+select,input[type=text]{
+  width:100%;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border2);
+  border-radius:var(--radius2);color:var(--text);font-size:13px;font-family:var(--sans);
+  outline:none;transition:all .2s;appearance:none;
+}
+select:focus,input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,0.15)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius2);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,0.05);color:var(--text);transition:all .15s;font-family:var(--sans);letter-spacing:.01em}
+.btn:hover:not(:disabled){background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.2);transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,rgba(79,142,247,0.3),rgba(167,139,250,0.2));border-color:rgba(79,142,247,0.5);color:var(--blue2)}
+.btn.primary:hover:not(:disabled){background:linear-gradient(135deg,rgba(79,142,247,0.45),rgba(167,139,250,0.3));box-shadow:0 4px 16px rgba(79,142,247,0.25)}
+.btn.danger{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.35);color:var(--red)}
+.btn.success{background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.35);color:var(--green)}
+.btn.sm{padding:5px 11px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* SPEED SLIDER */
+input[type=range]{width:100%;appearance:none;height:4px;border-radius:4px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue);cursor:pointer;transition:box-shadow .15s}
+input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(79,142,247,0.2)}
+
+/* TAPE */
+.tape-wrap{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:58px}
+.tape-cell{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;font-family:var(--mono);font-weight:500;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text2);transition:all .3s;position:relative}
+.tape-cell.read{background:rgba(79,142,247,0.2);border-color:var(--blue);color:var(--blue2);transform:scale(1.18);box-shadow:0 0 14px rgba(79,142,247,0.4),0 0 0 3px rgba(79,142,247,0.1)}
+.tape-cell.done{background:rgba(255,255,255,0.02);color:var(--text3);border-color:rgba(255,255,255,0.05)}
+.tape-cell.read::after{content:'▼';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--blue);animation:bounce .6s infinite alternate}
+@keyframes bounce{from{top:-18px}to{top:-14px}}
+.tape-end{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);border:1px dashed rgba(255,255,255,0.1)}
+
+/* STACK */
+.stack-outer{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:var(--radius2);padding:12px;min-height:140px;position:relative;overflow:hidden}
+.stack-label-top{font-size:10px;color:var(--text3);text-align:center;margin-bottom:6px;font-family:var(--mono)}
+.stack-inner{display:flex;flex-direction:column;gap:4px;align-items:center}
+.stack-chip{width:60px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:500;background:rgba(79,142,247,0.18);border:1px solid rgba(79,142,247,0.35);color:var(--blue2);animation:stackPush .25s ease;transition:all .2s}
+.stack-chip.bot{background:rgba(167,139,250,0.18);border-color:rgba(167,139,250,0.35);color:var(--purple)}
+.stack-chip.top-chip{background:rgba(79,142,247,0.3);border-color:var(--blue);box-shadow:0 0 12px rgba(79,142,247,0.3)}
+@keyframes stackPush{from{opacity:0;transform:translateY(-12px) scale(.9)}to{opacity:1;transform:none}}
+.stack-empty{font-size:11px;color:var(--text3);text-align:center;padding:16px;font-family:var(--mono)}
+
+/* STATE DIAGRAM - SVG */
+.state-diagram-wrap{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:var(--radius2);padding:10px;overflow:hidden}
+#state-svg{width:100%;display:block}
+
+/* METRICS */
+.metric-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(79,142,247,0.04));opacity:0;transition:opacity .3s}
+.metric-card:hover::before{opacity:1}
+.metric-label{font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.metric-value{font-size:26px;font-weight:700;font-family:var(--mono);background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;transition:all .3s}
+.metric-card.flash .metric-value{animation:metricFlash .3s ease}
+@keyframes metricFlash{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* STATUS BADGE */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:var(--radius3);font-size:12px;font-weight:600;letter-spacing:.03em;transition:all .4s}
+.status-badge.ready{background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.2);color:var(--text3)}
+.status-badge.running{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:var(--yellow)}
+.status-badge.accept{background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.35);color:var(--green);animation:statusPop .4s ease}
+.status-badge.reject{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.35);color:var(--red);animation:statusPop .4s ease}
+.status-badge.accept::before,.status-badge.running::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.status-badge.accept::before{animation:pulse 2s infinite}
+@keyframes statusPop{0%{transform:scale(.85);opacity:.5}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+
+/* TRANSITION TABLE */
+.trans-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.trans-table th{padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.trans-table td{padding:7px 10px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,0.04);transition:all .2s}
+.trans-table tr:last-child td{border-bottom:none}
+.trans-table tr.active-trans td{background:rgba(79,142,247,0.12);color:var(--blue2)}
+.trans-table tr.active-trans{animation:rowFlash .2s ease}
+@keyframes rowFlash{0%{background:rgba(79,142,247,0.3)}100%{background:rgba(79,142,247,0.12)}}
+.trans-wrap{max-height:200px;overflow-y:auto;border-radius:var(--radius2);border:1px solid var(--border)}
+.trans-wrap::-webkit-scrollbar{width:4px}
+.trans-wrap::-webkit-scrollbar-track{background:transparent}
+.trans-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* LOG */
+.log-wrap{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.log-wrap::-webkit-scrollbar{width:4px}
+.log-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.log-entry{font-size:11px;font-family:var(--mono);padding:5px 10px;border-radius:5px;border-left:3px solid transparent;background:rgba(255,255,255,0.03);color:var(--text3);animation:logSlide .2s ease;line-height:1.5}
+@keyframes logSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.log-entry.step{border-left-color:var(--blue);color:var(--text2)}
+.log-entry.accept{border-left-color:var(--green);background:rgba(52,211,153,0.08);color:var(--green)}
+.log-entry.reject{border-left-color:var(--red);background:rgba(248,113,113,0.08);color:var(--red)}
+
+/* LEARN */
+.learn-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;transition:all .25s}
+.learn-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.learn-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:10px}
+.learn-body{font-size:13px;color:var(--text2);line-height:1.75}
+.info-box{background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:var(--radius2);padding:10px 14px;font-size:12px;color:var(--blue2);margin:10px 0;font-family:var(--mono)}
+.formal-def{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.formal-row{display:flex;gap:10px;font-size:12px;color:var(--text2);font-family:var(--mono);padding:4px 8px;border-radius:5px;transition:background .15s}
+.formal-row:hover{background:rgba(255,255,255,0.04)}
+.formal-key{color:var(--purple);font-weight:600;min-width:32px}
+.accept-modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.accept-mode{padding:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius2)}
+.accept-mode-title{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px}
+.accept-mode-body{font-size:12px;color:var(--text2);line-height:1.65}
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.app-card{padding:12px;border-radius:var(--radius2);font-size:12px}
+.app-card strong{display:block;margin-bottom:4px;font-size:12px}
+.app-card p{color:var(--text2);line-height:1.5}
+
+/* EXAMPLES */
+.ex-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.ex-card.danger{border-color:rgba(248,113,113,0.25);background:rgba(248,113,113,0.04)}
+.ex-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.ex-body{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.65}
+.example-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* CONFETTI celebrate */
+@keyframes celebrate{0%{transform:translateY(0) rotateZ(0);opacity:1}100%{transform:translateY(220px) rotateZ(720deg);opacity:0}}
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;animation:celebrate 1.2s ease-out forwards;z-index:1000}
+
+/* TOOLTIP */
+[data-tip]{position:relative;cursor:help}
+[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(15,18,32,0.95);border:1px solid var(--border2);color:var(--text);font-size:11px;padding:4px 8px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:100;font-family:var(--sans)}
+[data-tip]:hover::after{opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .grid2{grid-template-columns:1fr}
+  .header{padding:20px 16px 0}
+  .tab-bar{padding:0 16px}
+  .main{padding:16px}
+}
+
+/* HEADER PADDING */
+.header-pad{height:20px}
+
+/* Section spacing */
+.section-gap{margin-top:16px}
+
+/* glow border on active */
+.card.glow{box-shadow:0 0 0 1px rgba(79,142,247,0.3),0 4px 32px rgba(79,142,247,0.1)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>⬡ PDA Simulator</h1>
+    <p>Pushdown Automaton · Interactive Visualizer</p>
+  </div>
+  <div class="header-badge">Interactive · v2.0</div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" id="t-simulate" onclick="switchTab('simulate',this)">⚙ Simulate</div>
+  <div class="tab" id="t-learn" onclick="switchTab('learn',this)">📖 Learn PDA</div>
+  <div class="tab" id="t-examples" onclick="switchTab('examples',this)">🧪 Examples</div>
+</div>
+
+<div class="main">
+
+<!-- SIMULATE TAB -->
+<div id="tab-simulate">
+  <div class="grid2">
+
+    <!-- LEFT -->
+    <div>
+      <div class="card glow" id="config-card">
+        <p class="card-title">⚙ Configuration</p>
+        <div style="margin-bottom:12px">
+          <label class="ctrl-label">Preset Automaton</label>
+          <select id="preset-select" onchange="loadPreset(this.value)">
+            <option value="anbn">L = {aⁿbⁿ | n ≥ 1}</option>
+            <option value="palindrome">L = {ww^R | w ∈ {a,b}*}</option>
+            <option value="brackets">L = Balanced Brackets { ( ) [ ] { } }</option>
+            <option value="anbncn">L = {aⁿbⁿcⁿ} — Non-CFL Demo</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="ctrl-label">Input String</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="input-string" value="aaabbb" placeholder="Enter input string…"/>
+            <button class="btn primary" onclick="startSim()" id="run-btn">▶ Run</button>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn sm" onclick="stepSim()" id="step-btn" disabled data-tip="Execute one transition">Step →</button>
+          <button class="btn sm" onclick="toggleAutoPlay()" id="play-btn" disabled data-tip="Auto-play all steps">▶ Auto</button>
+          <button class="btn sm danger" onclick="resetSim()" data-tip="Reset simulation">↺ Reset</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">Speed</span>
+          <input type="range" id="step-speed" min="100" max="1500" value="700" style="flex:1"/>
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">Fast</span>
+        </div>
+      </div>
+
+      <!-- Tape -->
+      <div class="card section-gap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <p class="card-title" style="margin:0">📼 Input Tape</p>
+          <div id="status-wrap"><span class="status-badge ready" id="status-text">Ready</span></div>
+        </div>
+        <div class="tape-wrap" id="tape-display">
+          <span style="font-size:12px;color:var(--text3)">No input loaded</span>
+        </div>
+      </div>
+
+      <!-- State Diagram -->
+      <div class="card section-gap">
+        <p class="card-title">🔵 State Diagram</p>
+        <div class="state-diagram-wrap">
+          <svg id="state-svg" height="90"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <!-- Stack -->
+      <div class="card">
+        <p class="card-title">📦 Stack Memory</p>
+        <div class="stack-outer">
+          <div class="stack-label-top">← TOP</div>
+          <div class="stack-inner" id="stack-display">
+            <div class="stack-empty">Empty</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transition Log -->
+      <div class="card section-gap">
+        <p class="card-title">📋 Transition Log</p>
+        <div class="log-wrap" id="trans-log"></div>
+      </div>
+
+      <!-- Transition Table -->
+      <div class="card section-gap">
+        <p class="card-title">📊 Transition Table</p>
+        <div class="trans-wrap">
+          <table class="trans-table">
+            <thead><tr><th>State</th><th>Input</th><th>Stack↑</th><th>→ State</th><th>Push</th></tr></thead>
+            <tbody id="trans-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="grid3 section-gap">
+    <div class="metric-card" id="mc-state"><div class="metric-label">Current State</div><div class="metric-value" id="m-state">—</div></div>
+    <div class="metric-card" id="mc-steps"><div class="metric-label">Steps Taken</div><div class="metric-value" id="m-steps">0</div></div>
+    <div class="metric-card" id="mc-stack"><div class="metric-label">Stack Depth</div><div class="metric-value" id="m-stack">0</div></div>
+  </div>
+</div>
+
+<!-- LEARN TAB -->
+<div id="tab-learn" style="display:none">
+  <div class="learn-card">
+    <div class="learn-title">What is a Pushdown Automaton?</div>
+    <p class="learn-body">A <strong style="color:var(--blue)">Pushdown Automaton (PDA)</strong> is a finite automaton augmented with an additional <strong style="color:var(--purple)">stack memory</strong>. The stack provides unlimited LIFO storage, enabling PDAs to recognize a strictly larger class of languages than regular finite automata — specifically, the class of <em>context-free languages</em>.</p>
+    <div class="info-box">💡 PDA = Finite Automaton + Unlimited Stack (LIFO). Stack = the secret superpower.</div>
+    <p class="learn-title" style="margin-top:14px;font-size:13px">Formal Definition: M = (Q, Σ, Γ, δ, q₀, Z₀, F)</p>
+    <div class="formal-def">
+      <div class="formal-row"><span class="formal-key">Q</span><span>— finite set of states</span></div>
+      <div class="formal-row"><span class="formal-key">Σ</span><span>— input alphabet (symbols accepted from tape)</span></div>
+      <div class="formal-row"><span class="formal-key">Γ</span><span>— stack alphabet (symbols that can be on the stack)</span></div>
+      <div class="formal-row"><span class="formal-key">δ</span><span>— transition function: Q × (Σ∪{ε}) × Γ → 2^(Q×Γ*)</span></div>
+      <div class="formal-row"><span class="formal-key">q₀</span><span>— start state</span></div>
+      <div class="formal-row"><span class="formal-key">Z₀</span><span>— initial stack symbol (bottom-of-stack marker)</span></div>
+      <div class="formal-row"><span class="formal-key">F</span><span>— set of accept states</span></div>
+    </div>
+  </div>
+  <div class="learn-card">
+    <div class="learn-title">How Transitions Work</div>
+    <div class="info-box">δ(q, a, A) = (p, γ) — In state <strong>q</strong>, reading <strong>'a'</strong>, stack top <strong>'A'</strong> → go to <strong>p</strong>, replace A with <strong>γ</strong></div>
+    <p class="learn-body" style="margin-top:10px">Each step the PDA reads one input symbol (or ε), peeks at the stack top, and chooses a transition:
+    <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+      <li>If <strong style="color:var(--blue)">push=[A,B]</strong> — pop stack top, push B then A (A ends up on top)</li>
+      <li>If <strong style="color:var(--red)">push=[]</strong> — pop stack top (POP operation, γ = ε)</li>
+      <li>ε-transitions let the PDA act without consuming input (nondeterminism)</li>
+    </ul>
+    </p>
+    <div class="accept-modes">
+      <div class="accept-mode"><div class="accept-mode-title">By Final State</div><div class="accept-mode-body">Accept if all input consumed and current state ∈ F. Stack contents irrelevant.</div></div>
+      <div class="accept-mode"><div class="accept-mode-title">By Empty Stack</div><div class="accept-mode-body">Accept if all input consumed and stack is empty. State irrelevant. Equivalent power.</div></div>
+    </div>
+  </div>
+  <div class="learn-card">
+    <div class="learn-title">Real-World Applications</div>
+    <div class="app-grid">
+      <div class="app-card" style="background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.2)"><strong style="color:var(--blue)">⟨/⟩ Parsing Languages</strong><p>CFGs describe syntax; PDAs parse them. Every compiler uses this.</p></div>
+      <div class="app-card" style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2)"><strong style="color:var(--green)">🏷 XML/HTML Validation</strong><p>Matching opening/closing tags requires stack-based memory.</p></div>
+      <div class="app-card" style="background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2)"><strong style="color:var(--purple)">🔧 Compiler Front-Ends</strong><p>Syntax analysis and recursive descent parsing.</p></div>
+      <div class="app-card" style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2)"><strong style="color:var(--yellow)">⚖ Expression Evaluation</strong><p>Balanced parentheses, operator precedence, arithmetic grammars.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMPLES TAB -->
+<div id="tab-examples" style="display:none">
+  <div class="ex-card">
+    <div class="ex-title">aⁿbⁿ — Equal number of a's and b's</div>
+    <div class="ex-body">The classic PDA example. Push one 'A' for each 'a' read, then pop one 'A' for each 'b'. Accept when input is consumed and stack is empty (except Z₀).</div>
+    <div class="example-btns">
+      <button class="btn sm success" onclick="runExample('anbn','ab')">ab ✓</button>
+      <button class="btn sm success" onclick="runExample('anbn','aabb')">aabb ✓</button>
+      <button class="btn sm success" onclick="runExample('anbn','aaabbb')">aaabbb ✓</button>
+      <button class="btn sm danger" onclick="runExample('anbn','aab')">aab ✗</button>
+      <button class="btn sm danger" onclick="runExample('anbn','abb')">abb ✗</button>
+    </div>
+  </div>
+  <div class="ex-card">
+    <div class="ex-title">ww^R — Palindromes over {a, b}</div>
+    <div class="ex-body">Push the first half onto the stack, nondeterministically guess the midpoint, then pop matching symbols for the second half.</div>
+    <div class="example-btns">
+      <button class="btn sm success" onclick="runExample('palindrome','abba')">abba ✓</button>
+      <button class="btn sm success" onclick="runExample('palindrome','aabbaa')">aabbaa ✓</button>
+      <button class="btn sm danger" onclick="runExample('palindrome','abab')">abab ✗</button>
+    </div>
+  </div>
+  <div class="ex-card">
+    <div class="ex-title">Balanced Brackets — { ( ) [ ] { } }</div>
+    <div class="ex-body">Push every opening bracket; on a closing bracket, verify and pop the matching opener from the stack top.</div>
+    <div class="example-btns">
+      <button class="btn sm success" onclick="runExample('brackets','()')">() ✓</button>
+      <button class="btn sm success" onclick="runExample('brackets','([]{})')">([]{}) ✓</button>
+      <button class="btn sm success" onclick="runExample('brackets','((()))')">((()))  ✓</button>
+      <button class="btn sm danger" onclick="runExample('brackets','([)]')">(][ ✗</button>
+      <button class="btn sm danger" onclick="runExample('brackets','((()')">(((  ✗</button>
+    </div>
+  </div>
+  <div class="ex-card danger">
+    <div class="ex-title" style="color:var(--red)">⚠ aⁿbⁿcⁿ — NOT a Context-Free Language</div>
+    <div class="ex-body" style="color:var(--text2)">PDAs cannot recognize this language. A PDA needs two independent counters, but the stack only provides one LIFO memory. This demonstrates the fundamental limits of pushdown automata — you need a Turing Machine for this.</div>
+    <button class="btn sm danger" onclick="runExample('anbncn','aabbcc')">Try aabbcc (will reject)</button>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+const PRESETS = {
+  anbn:{
+    name:'aⁿbⁿ',states:['q0','q1','q2'],startState:'q0',acceptStates:['q2'],initialStack:['Z'],
+    transitions:[
+      {from:'q0',input:'a',stackTop:'Z',to:'q1',push:['A','Z'],label:'push A'},
+      {from:'q1',input:'a',stackTop:'A',to:'q1',push:['A','A'],label:'push A'},
+      {from:'q1',input:'b',stackTop:'A',to:'q1',push:[],label:'pop A'},
+      {from:'q1',input:'',stackTop:'Z',to:'q2',push:['Z'],label:'ε→accept'},
+    ],examples:['ab','aabb','aaabbb']
+  },
+  palindrome:{
+    name:'ww^R',states:['q0','q1','q2'],startState:'q0',acceptStates:['q2'],initialStack:['Z'],
+    transitions:[
+      {from:'q0',input:'a',stackTop:'Z',to:'q0',push:['A','Z'],label:'push A'},
+      {from:'q0',input:'b',stackTop:'Z',to:'q0',push:['B','Z'],label:'push B'},
+      {from:'q0',input:'a',stackTop:'A',to:'q0',push:['A','A'],label:'push A'},
+      {from:'q0',input:'a',stackTop:'B',to:'q0',push:['A','B'],label:'push A'},
+      {from:'q0',input:'b',stackTop:'A',to:'q0',push:['B','A'],label:'push B'},
+      {from:'q0',input:'b',stackTop:'B',to:'q0',push:['B','B'],label:'push B'},
+      {from:'q0',input:'a',stackTop:'A',to:'q1',push:[],label:'guess mid'},
+      {from:'q0',input:'b',stackTop:'B',to:'q1',push:[],label:'guess mid'},
+      {from:'q1',input:'a',stackTop:'A',to:'q1',push:[],label:'pop A'},
+      {from:'q1',input:'b',stackTop:'B',to:'q1',push:[],label:'pop B'},
+      {from:'q1',input:'',stackTop:'Z',to:'q2',push:['Z'],label:'ε→accept'},
+    ],examples:['abba','aabbaa']
+  },
+  brackets:{
+    name:'balanced brackets',states:['q0','q1'],startState:'q0',acceptStates:['q1'],initialStack:['Z'],
+    transitions:[
+      {from:'q0',input:'(',stackTop:'Z',to:'q0',push:['(','Z'],label:'push ('},
+      {from:'q0',input:'(',stackTop:'(',to:'q0',push:['(','('],label:'push ('},
+      {from:'q0',input:'(',stackTop:'[',to:'q0',push:['(','['],label:'push ('},
+      {from:'q0',input:'(',stackTop:'{',to:'q0',push:['(','{'],label:'push ('},
+      {from:'q0',input:'[',stackTop:'Z',to:'q0',push:['[','Z'],label:'push ['},
+      {from:'q0',input:'[',stackTop:'(',to:'q0',push:['[','('],label:'push ['},
+      {from:'q0',input:'[',stackTop:'[',to:'q0',push:['[','['],label:'push ['},
+      {from:'q0',input:'[',stackTop:'{',to:'q0',push:['[','{'],label:'push ['},
+      {from:'q0',input:'{',stackTop:'Z',to:'q0',push:['{','Z'],label:'push {'},
+      {from:'q0',input:'{',stackTop:'(',to:'q0',push:['{','('],label:'push {'},
+      {from:'q0',input:'{',stackTop:'[',to:'q0',push:['{','['],label:'push {'},
+      {from:'q0',input:'{',stackTop:'{',to:'q0',push:['{','{'],label:'push {'},
+      {from:'q0',input:')',stackTop:'(',to:'q0',push:[],label:'pop ('},
+      {from:'q0',input:']',stackTop:'[',to:'q0',push:[],label:'pop ['},
+      {from:'q0',input:'}',stackTop:'{',to:'q0',push:[],label:'pop {'},
+      {from:'q0',input:'',stackTop:'Z',to:'q1',push:['Z'],label:'ε→accept'},
+    ],examples:['()','([]{})','((()))']
+  },
+  anbncn:{
+    name:'aⁿbⁿcⁿ (not CFL)',states:['q0'],startState:'q0',acceptStates:[],initialStack:['Z'],
+    transitions:[],examples:[]
+  }
+};
+
+let currentPreset='anbn', simState=null, autoInterval=null, activeRow=-1;
+
+/* ---- PRESET ---- */
+function loadPreset(key){
+  currentPreset=key;
+  const p=PRESETS[key];
+  renderTransTable(p);
+  renderSVG(p,p.startState);
+  resetSim();
+  document.getElementById('input-string').value=
+    key==='anbncn'?'aabbcc':(p.examples[Math.floor(p.examples.length/2)]||'');
+}
+
+/* ---- TRANSITION TABLE ---- */
+function renderTransTable(p){
+  const tb=document.getElementById('trans-tbody');
+  if(!p.transitions.length){
+    tb.innerHTML=`<tr><td colspan="5" style="color:var(--text3);text-align:center;padding:16px;font-size:12px">No transitions — not a CFL, PDA cannot recognize this</td></tr>`;return;
+  }
+  tb.innerHTML=p.transitions.map((t,i)=>
+    `<tr id="tr${i}"><td>${t.from}</td><td>${t.input||'ε'}</td><td>${t.stackTop}</td><td>${t.to}</td><td>${t.push.length?t.push.join(''):'ε'}</td></tr>`
+  ).join('');
+}
+
+function hlRow(i){
+  if(activeRow>=0){const r=document.getElementById('tr'+activeRow);if(r)r.classList.remove('active-trans');}
+  activeRow=i;
+  if(i>=0){const r=document.getElementById('tr'+i);if(r){r.classList.add('active-trans');r.scrollIntoView({block:'nearest',behavior:'smooth'});}}
+}
+
+/* ---- SVG STATE DIAGRAM ---- */
+function renderSVG(p,current){
+  const svg=document.getElementById('state-svg');
+  const n=p.states.length;
+  const W=Math.max(300,n*120+40);
+  svg.setAttribute('viewBox',`0 0 ${W} 90`);
+  const cx=i=>40+i*Math.floor((W-80)/(Math.max(n-1,1)));
+  const cy=45;
+
+  let html='';
+  // Arrow markers
+  html+=`<defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(148,163,184,0.6)"/>
+    </marker>
+    <marker id="arr-active" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="${'#4f8ef7'}"/>
+    </marker>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+
+  // Lines between states
+  for(let i=0;i<n-1;i++){
+    const isActive=p.states[i]===current||p.states[i+1]===current;
+    const col=isActive?'rgba(79,142,247,0.7)':'rgba(148,163,184,0.25)';
+    const x1=cx(i)+20,x2=cx(i+1)-20;
+    html+=`<line x1="${x1}" y1="${cy}" x2="${x2}" y2="${cy}" stroke="${col}" stroke-width="1.5" marker-end="url(#${isActive?'arr-active':'arr'})"/>`;
+  }
+
+  // Start arrow
+  html+=`<line x1="${cx(0)-30}" y1="${cy}" x2="${cx(0)-22}" y2="${cy}" stroke="rgba(148,163,184,0.4)" stroke-width="1.5" marker-end="url(#arr)"/>`;
+
+  // Nodes
+  p.states.forEach((s,i)=>{
+    const x=cx(i),y=cy,r=20;
+    const isAccept=p.acceptStates.includes(s);
+    const isActive=s===current;
+    const fill=isActive?(isAccept?'rgba(52,211,153,0.2)':'rgba(79,142,247,0.2)'):'rgba(255,255,255,0.04)';
+    const stroke=isActive?(isAccept?'#34d399':'#4f8ef7'):'rgba(255,255,255,0.15)';
+    const textCol=isActive?(isAccept?'#34d399':'#7cb9ff'):'#94a3b8';
+    const gf=isActive?'filter="url(#glow)"':'';
+    html+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${isActive?2:1.5}" ${gf}/>`;
+    if(isAccept)html+=`<circle cx="${x}" cy="${y}" r="${r-4}" fill="none" stroke="${stroke}" stroke-width="1" opacity=".5"/>`;
+    html+=`<text x="${x}" y="${y+4}" text-anchor="middle" fill="${textCol}" font-size="11" font-family="JetBrains Mono,monospace" font-weight="600">${s}</text>`;
+    if(isAccept)html+=`<text x="${x}" y="${y+r+14}" text-anchor="middle" fill="${stroke}" font-size="9" opacity=".7" font-family="Inter,sans-serif">accept</text>`;
+  });
+
+  svg.innerHTML=html;
+}
+
+/* ---- METRICS ---- */
+function flashMetric(id){
+  const el=document.getElementById(id);
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),400);
+}
+function setMetrics(state,steps,stackD){
+  const ms=document.getElementById('m-state'),mst=document.getElementById('m-steps'),msk=document.getElementById('m-stack');
+  if(ms.textContent!==state){ms.textContent=state;flashMetric('mc-state');}
+  if(mst.textContent!==String(steps)){mst.textContent=steps;flashMetric('mc-steps');}
+  if(msk.textContent!==String(stackD)){msk.textContent=stackD;flashMetric('mc-stack');}
+}
+
+/* ---- SIM ---- */
+function startSim(){
+  const p=PRESETS[currentPreset];
+  const input=document.getElementById('input-string').value.trim();
+  if(!p.transitions.length){
+    addLog('This language cannot be recognized by a PDA — not context-free.','reject');
+    setStatus('reject','✗ Not a CFL');return;
+  }
+  simState={p,input:input.split(''),pos:0,state:p.startState,stack:[...p.initialStack],steps:0,done:false,accepted:false};
+  document.getElementById('trans-log').innerHTML='';
+  hlRow(-1);updateDisplay();
+  document.getElementById('step-btn').disabled=false;
+  document.getElementById('play-btn').disabled=false;
+  setStatus('running','Running…');
+  addLog(`▶ Started: input="${input}" | state=${p.startState} | stack=[${p.initialStack.join('')}]`,'step');
+}
+
+function findTrans(p,state,ch,top){
+  // prefer exact input match first
+  for(let i=0;i<p.transitions.length;i++){
+    const t=p.transitions[i];
+    if(t.from===state&&t.input===ch&&t.stackTop===top)return{t,i,consumed:true};
+  }
+  for(let i=0;i<p.transitions.length;i++){
+    const t=p.transitions[i];
+    if(t.from===state&&t.input===''&&t.stackTop===top)return{t,i,consumed:false};
+  }
+  return null;
+}
+
+function stepSim(){
+  if(!simState||simState.done)return;
+  const {p,input}=simState;
+  const top=simState.stack[simState.stack.length-1];
+  const ch=input[simState.pos]||'';
+  const res=findTrans(p,simState.state,ch,top);
+  if(!res){
+    if(simState.pos>=input.length&&p.acceptStates.includes(simState.state)){finishSim(true);}
+    else{const ep=findTrans(p,simState.state,'',top);ep?applyTrans(ep):finishSim(false);}
+    return;
+  }
+  applyTrans(res);
+}
+
+function applyTrans(res){
+  const{t,i,consumed}=res;
+  simState.stack.pop();
+  [...t.push].reverse().forEach(s=>simState.stack.push(s));
+  const old=simState.state;
+  simState.state=t.to;simState.steps++;
+  if(consumed)simState.pos++;
+  hlRow(i);
+  addLog(`Step ${simState.steps}: (${old}, ${t.input||'ε'}, ${t.stackTop}) → (${t.to}, ${t.push.length?t.push.join(''):'ε'})  stack:[${simState.stack.join('')}]`,'step');
+  updateDisplay();
+  if(simState.pos>=simState.input.length){
+    const top2=simState.stack[simState.stack.length-1];
+    if(!findTrans(simState.p,simState.state,'',top2))
+      setTimeout(()=>{if(simState&&!simState.done)finishSim(simState.p.acceptStates.includes(simState.state));},120);
+  }
+}
+
+function finishSim(accepted){
+  simState.done=true;simState.accepted=accepted;
+  stopAuto();
+  document.getElementById('step-btn').disabled=true;
+  document.getElementById('play-btn').disabled=true;
+  const msg=accepted?`✓ ACCEPTED after ${simState.steps} steps`:`✗ REJECTED after ${simState.steps} steps`;
+  addLog(msg,accepted?'accept':'reject');
+  setStatus(accepted?'accept':'reject',accepted?'✓ Accepted':'✗ Rejected');
+  if(accepted)celebrate();
+  updateDisplay();
+}
+
+function resetSim(){
+  simState=null;stopAuto();hlRow(-1);
+  document.getElementById('step-btn').disabled=true;
+  document.getElementById('play-btn').disabled=true;
+  document.getElementById('trans-log').innerHTML='';
+  setStatus('ready','Ready');setMetrics('—',0,0);
+  renderTape([],- 1);renderStack([]);
+  renderSVG(PRESETS[currentPreset],PRESETS[currentPreset].startState);
+}
+
+function toggleAutoPlay(){
+  if(autoInterval){stopAuto();return;}
+  document.getElementById('play-btn').textContent='⏸ Pause';
+  const speed=1600-parseInt(document.getElementById('step-speed').value);
+  autoInterval=setInterval(()=>{
+    if(!simState||simState.done){stopAuto();return;}
+    stepSim();
+  },Math.max(speed,100));
+}
+function stopAuto(){
+  if(autoInterval){clearInterval(autoInterval);autoInterval=null;}
+  document.getElementById('play-btn').textContent='▶ Auto';
+}
+
+function updateDisplay(){
+  if(!simState)return;
+  renderTape(simState.input,simState.pos);
+  renderStack(simState.stack);
+  renderSVG(simState.p,simState.state);
+  setMetrics(simState.state,simState.steps,simState.stack.length);
+}
+
+/* ---- RENDER ---- */
+function renderTape(chars,pos){
+  const d=document.getElementById('tape-display');
+  if(!chars.length){d.innerHTML='<span style="font-size:12px;color:var(--text3)">No input loaded</span>';return;}
+  d.innerHTML=chars.map((c,i)=>{
+    let cls='tape-cell';
+    if(i===pos)cls+=' read';
+    else if(i<pos)cls+=' done';
+    return `<div class="${cls}">${c}</div>`;
+  }).join('')+`<div class="tape-end">⊣</div>`;
+}
+
+function renderStack(stack){
+  const d=document.getElementById('stack-display');
+  if(!stack.length){d.innerHTML='<div class="stack-empty">Empty</div>';return;}
+  d.innerHTML=stack.slice().reverse().map((s,i)=>{
+    let cls='stack-chip';
+    if(s==='Z')cls+=' bot';
+    if(i===0)cls+=' top-chip';
+    return `<div class="${cls}">${s}</div>`;
+  }).join('');
+}
+
+/* ---- STATUS ---- */
+function setStatus(type,text){
+  const el=document.getElementById('status-text');
+  el.className='status-badge '+type;
+  el.textContent=text;
+}
+
+/* ---- LOG ---- */
+function addLog(msg,type){
+  const d=document.getElementById('trans-log');
+  const e=document.createElement('div');
+  e.className='log-entry '+type;e.textContent=msg;
+  d.prepend(e);
+}
+
+/* ---- CELEBRATE ---- */
+function celebrate(){
+  const colors=[
+    'var(--blue)','var(--green)','var(--purple)','var(--yellow)','var(--orange)'
+  ];
+  for(let i=0;i<30;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='confetti-piece';
+      el.style.cssText=`left:${20+Math.random()*60}vw;top:${Math.random()*30}vh;background:${colors[Math.floor(Math.random()*colors.length)]};transform:rotateZ(${Math.random()*360}deg);animation-duration:${0.8+Math.random()*0.8}s;animation-delay:${Math.random()*0.3}s`;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1500);
+    },i*30);
+  }
+}
+
+/* ---- TABS ---- */
+function switchTab(tab,el){
+  ['simulate','learn','examples'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display=id===tab?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+/* ---- EXAMPLES ---- */
+function runExample(preset,input){
+  document.getElementById('preset-select').value=preset;
+  loadPreset(preset);
+  document.getElementById('input-string').value=input;
+  switchTab('simulate',document.getElementById('t-simulate'));
+  setTimeout(()=>{startSim();setTimeout(toggleAutoPlay,250);},100);
+}
+
+/* ---- INIT ---- */
+loadPreset('anbn');
+</script>
+</body>
+</html>
