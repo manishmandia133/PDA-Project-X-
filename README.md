@@ -1,5 +1,3 @@
-# PDA-Project-X-
-
 # Pushdown Automaton — Interactive Theory & Simulator
 
 An interactive web-based platform for learning, visualizing, and simulating Pushdown Automata (PDAs). Understand context-free languages through hands-on experimentation with formal language theory.
