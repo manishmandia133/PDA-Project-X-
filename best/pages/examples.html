@@ -77,8 +77,31 @@ body{cursor:none;overflow-x:hidden;}
 .sum-table td.yep{color:var(--mint);}
 .sum-table td.nop{color:#ff5050;}
 
-@media(max-width:768px){.ex-hero,.ex-wrap{padding:36px 20px;}.str-grid{grid-template-columns:1fr 1fr;}}
-@media(max-width:500px){.str-grid{grid-template-columns:1fr;}}
+@media(max-width:900px){
+  .ex-hero,.ex-wrap{padding:36px 24px;}
+  .ex-sect-head{flex-direction:column;gap:12px;align-items:flex-start;}
+  .ex-sn{font-size:48px;}
+  .ex-title{font-size:clamp(22px,4vw,36px);}
+}
+@media(max-width:768px){
+  .ex-hero,.ex-wrap{padding:28px 20px;}
+  .str-grid{grid-template-columns:1fr 1fr;}
+  .ex-desc{font-size:11px;}
+  .sum-table{font-size:10px;display:block;overflow-x:auto;white-space:nowrap;}
+}
+@media(max-width:500px){
+  .str-grid{grid-template-columns:1fr;}
+  .ex-hero{padding:24px 16px 20px;}
+  .ex-wrap{padding:24px 16px;}
+  .ex-sn{font-size:36px;}
+  .ex-title{font-size:clamp(20px,5vw,28px);}
+  .str-val{font-size:22px;}
+  .non-box{padding:16px;}
+  .non-title{font-size:14px;}
+  .non-body{font-size:12px;}
+  .str-trace{padding:7px 10px;}
+  .str-card{padding:16px;}
+}
 </style>
 </head>
 <body>
@@ -88,12 +111,15 @@ body{cursor:none;overflow-x:hidden;}
 
 <nav class="nav scrolled" id="main-nav">
   <a href="../index.html" class="nav-logo">PDA<span>.</span></a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links">
     <li><a href="../index.html">Home</a></li>
     <li><a href="simulate.html">Simulator</a></li>
     <li><a href="examples.html" class="active">Examples</a></li>
   </ul>
   <a href="simulate.html" class="nav-cta">Simulator ↗</a>
+  <button class="nav-burger" id="nav-burger" onclick="this.classList.toggle('open');document.getElementById('nav-links').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <div class="ex-page">
@@ -105,7 +131,7 @@ body{cursor:none;overflow-x:hidden;}
   </div>
 
   <!-- Summary table -->
-  <div style="padding:0 60px;background:var(--dark);">
+  <div style="padding:0 clamp(16px,4vw,60px);background:var(--dark);overflow-x:auto;">
     <table class="sum-table">
       <thead><tr><th>Language</th><th>Notation</th><th>Context-Free?</th><th>Stack Strategy</th><th>Acceptance</th></tr></thead>
       <tbody>

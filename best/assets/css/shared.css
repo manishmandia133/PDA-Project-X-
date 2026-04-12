@@ -36,6 +36,13 @@ body {
   cursor: none;
 }
 
+/* Hide custom cursor on touch devices */
+@media (hover: none), (pointer: coarse) {
+  body { cursor: auto !important; }
+  #cursor-dot, #cursor-ring { display: none !important; }
+  * { cursor: auto !important; }
+}
+
 /* ── CUSTOM CURSOR ──────────────────────────────── */
 #cursor-dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -76,6 +83,23 @@ body:has(button:hover) #cursor-ring {
   border-bottom: 1px solid var(--border);
   padding: 14px 40px;
 }
+
+/* Mobile hamburger */
+.nav-burger {
+  display: none;
+  flex-direction: column; gap: 5px;
+  padding: 8px; cursor: pointer;
+  background: none; border: none;
+  z-index: 1010;
+}
+.nav-burger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: all .3s;
+}
+.nav-burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.nav-burger.open span:nth-child(2) { opacity: 0; }
+.nav-burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 .nav-logo {
   font-family: var(--head);
   font-size: 20px; font-weight: 800;
@@ -333,21 +357,44 @@ footer {
    will-change gives the browser a hint for compositing these animated layers. */
 .g-fade, .g-up, .g-left, .g-right, .g-scale { will-change: opacity, transform; }
 
-/* ── RESPONSIVE ─────────────────────────────────── */
+/* ── RESPONSIVE ─────────────────────────────── */
+@media(hover: none) {
+  .cursor, .cursor-follower { display: none !important; }
+}
 @media(max-width:1024px){
   .section-inner { padding: 80px 32px; }
   .nav { padding: 18px 28px; }
+  .nav.scrolled { padding: 12px 28px; }
   footer { padding: 32px 28px; }
 }
 @media(max-width:768px){
   .section-inner { padding: 60px 20px; }
   .nav { padding: 16px 20px; }
-  .nav-links { display: none; }
+  .nav.scrolled { padding: 12px 20px; }
+  .nav-burger { display: flex; }
+  .nav-links {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,10,10,.97);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 32px; z-index: 1005;
+  }
+  .nav-links.open {
+    display: flex;
+  }
+  .nav-links a { font-size: 18px; letter-spacing: .05em; }
+  .nav-cta { display: none; }
   .side-badge { display: none; }
   .bento { grid-template-columns: 1fr 1fr; }
   footer { flex-direction: column; align-items: flex-start; }
+  .section-h { font-size: clamp(26px, 6vw, 48px); }
+  .hero-h { font-size: clamp(32px, 8vw, 60px); }
 }
 @media(max-width:480px){
   .section-inner { padding: 48px 16px; }
   footer { padding: 24px 16px; }
+  .bento { grid-template-columns: 1fr; }
+  .section-h { font-size: clamp(22px, 7vw, 36px); }
 }

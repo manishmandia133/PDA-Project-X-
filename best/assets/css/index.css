@@ -721,6 +721,7 @@
 
   .hero-cta {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .apps-grid {
@@ -732,16 +733,35 @@
   .accept-grid,
   .how-steps {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .lang-examples {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .trans-block {
+    padding: 20px 18px;
+  }
+
+  .cta-big {
+    font-size: clamp(32px, 7vw, 80px);
+  }
+
+  .cta-btns {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
 }
 
 @media(max-width:600px) {
   .hero {
     padding: 80px 20px 32px;
+  }
+
+  .hero-h {
+    font-size: clamp(36px, 9vw, 60px);
   }
 
   .hero-stats {
@@ -765,5 +785,87 @@
 
   .lang-examples {
     grid-template-columns: 1fr;
+  }
+
+  .hero-cta {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-primary, .btn-outline {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hero-scroll {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .how-step {
+    padding: 20px;
+  }
+
+  .how-step-title {
+    font-size: 15px;
+  }
+
+  .pump-box {
+    padding: 16px;
+  }
+
+  .hier-item {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .hier-badge {
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
+  }
+
+  .app-card {
+    padding: 18px;
+  }
+
+  .app-title {
+    font-size: 14px;
+  }
+
+  .cta-big {
+    font-size: clamp(28px, 8vw, 60px);
+  }
+
+  .cta-btns {
+    margin-top: 32px;
+  }
+}
+
+@media(max-width:380px) {
+  .hero {
+    padding: 72px 16px 24px;
+  }
+
+  .hero-h {
+    font-size: clamp(28px, 10vw, 48px);
+  }
+
+  .hero-stat {
+    padding: 12px 0;
+  }
+
+  .theory-def {
+    padding: 16px;
+  }
+
+  .def-row {
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .lang-card {
+    padding: 16px;
   }
 }

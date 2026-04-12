@@ -594,6 +594,163 @@ input[type=range]::-webkit-slider-thumb:hover {
   0% { opacity: 1; transform: translateY(0) rotate(0deg); }
   100% { opacity: 0; transform: translateY(280px) rotate(720deg); }
 }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — SIMULATOR
+   Mobile-first stacked layout
+   ══════════════════════════════════════════════════ */
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .sim-body { grid-template-columns: 220px 1fr 150px; }
+  .ctrl-section { padding: 10px 12px; }
+  .sim-hdr-right { display: none; }
+}
+
+/* Small tablet */
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  .sim-page { height: auto; min-height: 100vh; overflow: visible; }
+  .sim-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    overflow: visible;
+  }
+
+  /* Header */
+  .sim-hdr { flex-wrap: wrap; gap: 8px; padding: 8px 16px; }
+  .sim-hdr-right { display: none; }
+  .sim-tabs { width: 100%; justify-content: center; }
+
+  /* Left panel → horizontal controls bar */
+  .sim-left {
+    order: -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+    max-height: none;
+  }
+  .ctrl-section { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+  .ctrl-section:nth-child(even) { border-right: none; }
+
+  /* Center panel */
+  .sim-center { overflow: visible; }
+  .center-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .diagram-section { border-right: none; border-bottom: 1px solid var(--border); min-height: 250px; }
+  .canvas-wrap { min-height: 220px; }
+  .steplog-section { max-height: 300px; }
+
+  /* Right panel → horizontal bar under center */
+  .sim-right {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    flex-direction: row;
+    min-height: auto;
+  }
+  .stack-header { flex-shrink: 0; width: auto; border-bottom: none; border-right: 1px solid var(--border); padding: 8px 12px; }
+  .stack-body {
+    flex-direction: row; flex-wrap: wrap; gap: 4px;
+    padding: 8px 12px;
+    overflow-x: auto; overflow-y: hidden;
+    align-items: center;
+  }
+  .stack-chip { width: auto; min-width: 36px; height: 28px; padding: 0 10px; }
+  .stack-footer { border-top: none; border-left: 1px solid var(--border); }
+  .stack-empty { min-height: auto; padding: 8px; }
+  .stack-legend { display: none; }
+  .stack-subtitle { display: none; }
+
+  /* Theory tab */
+  #page-theory { padding: 28px 20px; }
+  .def-grid { grid-template-columns: 1fr; }
+  .th-h2 { font-size: clamp(20px, 4vw, 32px); }
+}
+
+/* Phone */
+@media (max-width: 600px) {
+  .sim-page { padding-top: 50px; }
+  .sim-hdr { padding: 6px 12px; }
+  .sim-hdr-brand { font-size: 12px; }
+  .result-badge { font-size: 8px; padding: 3px 10px; }
+  .stab { padding: 6px 10px; font-size: 9px; }
+
+  .sim-left {
+    grid-template-columns: 1fr;
+  }
+  .ctrl-section { border-right: none !important; padding: 10px 14px; }
+  .ctrl-label { font-size: 7px; }
+
+  /* Hide non-essential controls on phone */
+  .depth-chart-wrap { height: 40px; }
+  .depth-stats { grid-template-columns: 1fr 1fr; gap: 4px; }
+  .dstat { padding: 4px 6px; }
+  .dstat-label { font-size: 6px; }
+  .dstat-val { font-size: 11px; }
+
+  /* Tape */
+  .tape-section { padding: 8px 12px; }
+  .tape-header { flex-direction: column; gap: 4px; align-items: flex-start; }
+  .tcell { width: 30px; height: 30px; font-size: 13px; }
+  .tcell-eof { width: 30px; height: 30px; font-size: 9px; }
+
+  /* Status bar */
+  .status-bar { padding: 4px 12px; }
+  .status-info { font-size: 8px; }
+
+  /* Diagram */
+  .diagram-section { min-height: 200px; }
+  .canvas-wrap { min-height: 180px; }
+  .diagram-header { padding: 6px 12px; font-size: 8px; }
+  .diagram-sub { display: none; }
+
+  /* Step log */
+  .steplog-header { padding: 6px 12px; font-size: 8px; }
+  .steplog-sub { display: none; }
+  .slog-table thead th { font-size: 7px; padding: 4px 6px; }
+  .slog-table tbody td { font-size: 9px; padding: 4px 6px; }
+  .note-text { max-width: 80px; font-size: 8px; }
+
+  /* Stack */
+  .sim-right { flex-direction: column; }
+  .stack-header { border-right: none; border-bottom: 1px solid var(--border); }
+  .stack-body { flex-direction: column; overflow-y: auto; overflow-x: hidden; max-height: 150px; }
+  .stack-chip { width: 100%; min-width: auto; }
+  .stack-footer { border-left: none; border-top: 1px solid var(--border); }
+
+  /* Playback */
+  .playback-row { gap: 3px; }
+  .pbtn { padding: 6px 0; font-size: 12px; }
+
+  /* Theory */
+  #page-theory { padding: 20px 14px; }
+  .th-body { font-size: 12px; }
+  .th-table th, .th-table td { padding: 6px 8px; font-size: 10px; }
+  .th-box { padding: 14px 16px; }
+  .hier-strip .hs-row { padding: 8px 10px; font-size: 11px; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .sim-hdr-brand { font-size: 10px; }
+  .playback-row { flex-wrap: wrap; }
+  .pbtn { flex: 0 0 calc(50% - 3px); }
+  .tcell { width: 26px; height: 26px; font-size: 11px; }
+  .slog-table .note-text { display: none; }
+}
+
+/* Touch device: allow overflow scroll */
+@media (hover: none) {
+  body { overflow: auto !important; }
+  .sim-page { height: auto; min-height: 100vh; }
+  .sim-body { overflow: visible; }
+  .sim-left { overflow: visible; }
+}
 </style>
 </head>
 <body>
@@ -603,12 +760,15 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 <nav class="nav scrolled" id="main-nav">
   <a href="../index.html" class="nav-logo">PDA<span>.</span></a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links">
     <li><a href="../index.html">Home</a></li>
     <li><a href="simulate.html" class="active">Simulator</a></li>
     <li><a href="examples.html">Examples</a></li>
   </ul>
   <a href="examples.html" class="nav-cta">Examples ↗</a>
+  <button class="nav-burger" id="nav-burger" onclick="this.classList.toggle('open');document.getElementById('nav-links').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <div class="sim-page">

@@ -31,12 +31,15 @@
   <!-- ═══════════════ NAV ═══════════════ -->
   <nav class="nav" id="main-nav">
     <a href="index.html" class="nav-logo">PDA<span>.</span></a>
-    <ul class="nav-links">
+    <ul class="nav-links" id="nav-links">
       <li><a href="index.html" class="active">Home</a></li>
       <li><a href="pages/simulate.html">Simulator</a></li>
       <li><a href="pages/examples.html">Examples</a></li>
     </ul>
     <a href="pages/simulate.html" class="nav-cta">Launch Simulator ↗</a>
+    <button class="nav-burger" id="nav-burger" onclick="this.classList.toggle('open');document.getElementById('nav-links').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <!-- ═══════════════ HERO ═══════════════ -->
