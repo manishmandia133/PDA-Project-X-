@@ -13,7 +13,7 @@ A **Pushdown Automaton** is a computational model that extends finite automata w
 
 ## 🚀 Quick Start
 
-Visit the live demo: **https://push-down-automaton.netlify.app/**
+Visit the live demo: **[https://push-down-automaton.netlify.app/](https://pda-project-x.vercel.app/)**
 
 Or clone and open locally:
 ```bash
